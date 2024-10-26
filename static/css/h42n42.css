@@ -1,25 +1,26 @@
 * {
     font-family: sans-serif;
 }
-
+* {
+    font-family: sans-serif;
+}
 
 .gameboard {
     width: 1000px;
     height: 700px;
     background-color: #f0f0f0;
-    margin: 30px;
 
     /* Hospital */
     border-bottom-style: dashed;
     border-bottom-color: coral;
 }
 
-.gameboard .river {
+.river {
     height: 7%;
-    background-color: black;
+    background-color: #4ab3b4;
 }
 
-.gameboard .playground {
+.playground {
     height: 93%;
 }
 
