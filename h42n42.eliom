@@ -14,18 +14,25 @@ open CustomTypes
 let get_playground () =
   { dom_elt = To_dom.of_div ~%playground_elt }
 
-let create_creet () =
-  let creet_elt = div ~a:[ a_class [ "creet" ] ] [] in
+let create_creet ~x ~y () =
+  let creet_elt = div ~a:[
+      a_class [ "creet" ];
+      a_style ("position: absolute; left: " ^ string_of_int x ^ "px; top: " ^ string_of_int y ^ "px;")
+    ] [] in
     { dom_elt = To_dom.of_div creet_elt }
 
 let init_client () =
   let playground = get_playground () in
   (* Firebug.console##log_2 (Js.string "playground") playground; *)
 
-  let creet = create_creet () in
+  (* let creet = create_creet () in *)
   (* Firebug.console##log_2 (Js.string "creet_dom_elt") creet; *)
 
-  Dom.appendChild playground.dom_elt creet.dom_elt]
+  let creet1 = create_creet ~x:100 ~y:150 () in
+  Dom.appendChild playground.dom_elt creet1.dom_elt;
+  let creet2 = create_creet ~x:200 ~y:300 () in
+  Dom.appendChild playground.dom_elt creet2.dom_elt;
+  ]
 
 
 let%server application_name = "h42n42"
