@@ -12,9 +12,11 @@ let main () =
 
   let creet1 = Creet.create ~x:100 ~y:150 () in
   Lwt.async (fun () -> Playground.add_creet playground creet1);
+  Lwt.async (fun () -> Creet.move creet1 ());
 
   let creet2 = Creet.create ~x:200 ~y:300 () in
   Lwt.async (fun () -> Playground.add_creet playground creet2);
+  Lwt.async (fun () -> Creet.move creet2 ());
 
   Lwt.return ()]
 
