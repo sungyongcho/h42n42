@@ -6,18 +6,17 @@ open Html.D
 ]
 
 [%%client
-open Js_of_ocaml
 
 let main () =
   let playground = Playground.get () in
 
-  let creet1 = Creet.create ~x:200 ~y:150 () in
-  Firebug.console##log_2 (Js.string "creet1") creet1;
-  Dom.appendChild playground.dom_elt creet1.dom_elt;
+  let creet1 = Creet.create ~x:100 ~y:150 () in
+  Lwt.async (fun () -> Playground.add_creet playground creet1);
 
   let creet2 = Creet.create ~x:200 ~y:300 () in
-  Firebug.console##log_2 (Js.string "creet2") creet2;
-  Dom.appendChild playground.dom_elt creet2.dom_elt;]
+  Lwt.async (fun () -> Playground.add_creet playground creet2);
+
+  Lwt.return ()]
 
 
 let%server application_name = "h42n42"
@@ -58,7 +57,7 @@ let%shared page () =
 
 let%shared () =
   App.register ~service:main_service (fun () () ->
-    let _ = [%client (main () : unit)] in
+    let _ = [%client (main () : unit Lwt.t)] in
     Lwt.return
       (
         html
