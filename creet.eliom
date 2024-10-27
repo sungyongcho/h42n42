@@ -35,7 +35,7 @@ let create ~x ~y () = {
     x_change = 1;
     y = y;
     y_min = 0;
-    y_max = 700;
+    y_max = 651;
     y_change = 1
   }
 }
@@ -52,18 +52,16 @@ let change_y creet () =
 
 let rec move creet () =
   let%lwt () = Lwt_js.sleep 0.005 in
-  match creet with
-  | creet when List.mem creet.coordinates.x [ creet.coordinates.x_min; creet.coordinates.x_max ] ->
-      creet.coordinates.x_change <- creet.coordinates.x_change * -1;
-      change_x creet ();
-      move creet ()
-  | creet when List.mem creet.coordinates.y [ creet.coordinates.y_min; creet.coordinates.y_max ] ->
-      creet.coordinates.y_change <- creet.coordinates.y_change * -1;
-      change_y creet ();
-      move creet ()
-  | creet ->
-      change_y creet ();
-      change_x creet ();
-      move creet ()
-
+  if creet.coordinates.x = creet.coordinates.x_min || creet.coordinates.x = (creet.coordinates.x_max - 50)then (
+    creet.coordinates.x_change <- creet.coordinates.x_change * -1;
+    change_x creet ();
+    move creet ())
+  else if creet.coordinates.y = creet.coordinates.y_min || creet.coordinates.y = (creet.coordinates.y_max - 50)then (
+    creet.coordinates.y_change <- creet.coordinates.y_change * -1;
+    change_y creet ();
+    move creet ())
+  else (
+    change_y creet ();
+    change_x creet ();
+    move creet () )
 ]

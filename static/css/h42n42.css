@@ -1,13 +1,12 @@
 * {
     font-family: sans-serif;
 }
-* {
-    font-family: sans-serif;
-}
-
 .gameboard {
     width: 1000px;
     height: 700px;
+	margin:0;
+	padding: 0;
+	gap:0;
     background-color: #f0f0f0;
 
     /* Hospital */
@@ -21,7 +20,11 @@
 }
 
 .playground {
+    position: relative; /* Added */
     height: 93%;
+    margin: 0;
+    padding: 0;
+    border: none;
 }
 
 .creet {
@@ -30,5 +33,5 @@
     background-color: #267ef5;
     border-radius: 50%;
     display: inline-block;
-    position: relative;
+    position: absolute;
 }
