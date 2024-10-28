@@ -41,8 +41,12 @@ let _move creet =
   creet.dom_elt##.style##.left := get_px creet.coordinates.x;
   creet.dom_elt##.style##.top := get_px creet.coordinates.y
 
-let change_state creet new_state =
-  creet.coordinates.state <- new_state;
+let change_state creet =
+  let n = Random.int 100 in
+  if n < 10 then creet.coordinates.state <- Berserk
+  else if n >= 10 && n < 20 then creet.coordinates.state <- Mean
+  else creet.coordinates.state <- Sick;
+
   creet.dom_elt##.style##.backgroundColor := get_bg_color creet.coordinates.state;
   Firebug.console##log (Js.string ("Setting background color to: " ^
   (Js.to_string (get_bg_color creet.coordinates.state))));;
@@ -59,11 +63,11 @@ let create ~x ~y () =
       x = x;
       x_min = 0;
       x_max = 1000;
-      x_dir = 1;
+      x_dir = (if Random.bool () = true then 1 else -1);
       y = y;
       y_min = -15;
       y_max = 651;
-      y_dir = 1;
+      y_dir = (if Random.bool () = true then 1 else -1);
       state = Healthy
     }
   } in
@@ -78,8 +82,8 @@ let rec move creet =
     creet.coordinates.x_dir <- creet.coordinates.x_dir * -1
   )
   else if creet.coordinates.y = creet.coordinates.y_min || creet.coordinates.y = (creet.coordinates.y_max - 50) then (
-      if creet.coordinates.y <= 0 then change_state creet Sick;
-  creet.coordinates.y_dir <- creet.coordinates.y_dir * -1
+    if creet.coordinates.y <= 0 && creet.coordinates.state = Healthy then change_state creet;
+    creet.coordinates.y_dir <- creet.coordinates.y_dir * -1
   );
   _move creet;
   move creet

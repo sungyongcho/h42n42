@@ -8,13 +8,14 @@ open Html.D
 [%%client
 
 let main () =
+  Random.self_init ();
   let playground = Playground.get () in
 
-  let creet1 = Creet.create ~x:100 ~y:150 () in
+  let creet1 = Creet.create ~x:(max 10 (Random.int 590)) ~y:(max 10 (Random.int 650)) () in
   Lwt.async (fun () -> Playground.add_creet playground creet1);
   Lwt.async (fun () -> Creet.move creet1);
 
-  let creet2 = Creet.create ~x:200 ~y:300 () in
+  let creet2 = Creet.create ~x:(max 10 (Random.int 590)) ~y:(max 10 (Random.int 650)) () in
   Lwt.async (fun () -> Playground.add_creet playground creet2);
   Lwt.async (fun () -> Creet.move creet2);
 
