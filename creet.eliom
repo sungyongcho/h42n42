@@ -92,11 +92,9 @@ let change_condition creet =
 
   creet.status.condition <- new_condition;
   creet.status.max_size <- _max_size_for_condition new_condition;
-
-
-  if creet.status.condition <> Berserk then  _change_size creet;
-  creet.dom_elt##.style##.backgroundColor := get_bg_color creet.status.condition;
   creet.coordinates.speed <- creet.coordinates.speed *. 0.85;
+
+  creet.dom_elt##.style##.backgroundColor := get_bg_color creet.status.condition;
   Firebug.console##log (Js.string ("Setting background color to: " ^
   (Js.to_string (get_bg_color creet.status.condition))));;
 
@@ -133,13 +131,13 @@ let rec move creet =
   let%lwt () = Lwt_js.sleep 0.001 in
   (* Firebug.console##log (Js.string (Printf.sprintf "y: %d, y_min: %d" creet.coordinates.y creet.coordinates.y_min)); *)
   if creet.coordinates.x <= (float_of_int creet.coordinates.x_min)
-    || creet.coordinates.x >= (float_of_int creet.coordinates.x_max -. 50.0) then (
+    || creet.coordinates.x >= (float_of_int creet.coordinates.x_max -. creet.coordinates.size) then (
     creet.coordinates.x_step <- Float.neg creet.coordinates.x_step;
     _move creet
   )
   else if creet.coordinates.y <= (float_of_int creet.coordinates.y_min)
     ||
-    creet.coordinates.y >= (float_of_int creet.coordinates.y_max -. 50.0) then (
+    creet.coordinates.y >= (float_of_int creet.coordinates.y_max -. creet.coordinates.size) then (
     if creet.coordinates.y <= 0. && creet.status.condition = Healthy then change_condition creet;
     creet.coordinates.y_step <- Float.neg creet.coordinates.y_step;
     _move creet;

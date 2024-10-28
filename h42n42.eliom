@@ -11,11 +11,12 @@ let main () =
   Random.self_init ();
   let playground = Playground.get () in
 
-  let creet1 = Creet.create ~x:(max 10 (Random.int 590)) ~y:(max 10 (Random.int 650)) () in
+  let creet1 = Creet.create ~x:1 ~y:0 () in
   Lwt.async (fun () -> Playground.add_creet playground creet1);
   Lwt.async (fun () -> Creet.move creet1);
 
-  let creet2 = Creet.create ~x:(max 10 (Random.int 590)) ~y:(max 10 (Random.int 650)) () in
+  (* TODO: do smth about 650 - 50 *)
+  let creet2 = Creet.create ~x:(max 10 (Random.int 590)) ~y:(max 50 650 - 50) () in
   Lwt.async (fun () -> Playground.add_creet playground creet2);
   Lwt.async (fun () -> Creet.move creet2);
 
