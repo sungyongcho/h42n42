@@ -11,11 +11,13 @@ type creet_status = {
   mutable max_size: float;
 }
 
+let base_creet_size: float = 50.
+
 let _max_size_for_condition = function
-  | Healthy -> 50.
-  | Sick -> 50.
-  | Berserk -> 50. *. 4.0
-  | Mean -> 50. *. 0.85
+  | Healthy -> 1.
+  | Sick -> 1.
+  | Berserk -> 4.0
+  | Mean -> 0.85
 
 type coordinates = {
   mutable size: float;
@@ -23,11 +25,11 @@ type coordinates = {
   mutable x : float;
   mutable x_min : int;
   mutable x_max : int;
-  mutable x_dir : float;
+  mutable x_step : float;
   mutable y : float;
   mutable y_min : int;
   mutable y_max : int;
-  mutable y_dir : float;
+  mutable y_step : float;
 }
 
 type creet = {
@@ -51,22 +53,34 @@ let _get_px number = Js.string (Printf.sprintf "%dpx" number)
 let _get_step position step speed = position +. (step *. speed)
 
 let _move creet =
-  creet.coordinates.x <- _get_step creet.coordinates.x  creet.coordinates.x_dir creet.coordinates.speed;
-  creet.coordinates.y <- _get_step creet.coordinates.y  creet.coordinates.y_dir creet.coordinates.speed;
+  creet.coordinates.x <- _get_step creet.coordinates.x  creet.coordinates.x_step creet.coordinates.speed;
+  creet.coordinates.y <- _get_step creet.coordinates.y  creet.coordinates.y_step creet.coordinates.speed;
 
   creet.dom_elt##.style##.left := _get_px (int_of_float creet.coordinates.x);
   creet.dom_elt##.style##.top := _get_px (int_of_float creet.coordinates.y)
 
 let _change_size creet =
-  creet.coordinates.size <- creet.status.max_size;
+  let target_size = creet.status.max_size *. base_creet_size in
+  if creet.coordinates.size <> target_size then
+    let adjustment = (target_size -. creet.coordinates.size) /. abs_float (target_size -. creet.coordinates.size) in
+    creet.coordinates.size <- creet.coordinates.size +. adjustment;
+  (* fix the code here *)
   creet.dom_elt##.style##.height := _get_px (int_of_float creet.coordinates.size);
   creet.dom_elt##.style##.width := _get_px (int_of_float creet.coordinates.size)
 
-let _increase_size creet =
+(* let _increase_berserk_size creet =
   if creet.coordinates.size < creet.status.max_size then
     creet.coordinates.size <- creet.coordinates.size +. 1.0;
   creet.dom_elt##.style##.height := _get_px (int_of_float creet.coordinates.size);
-  creet.dom_elt##.style##.width := _get_px (int_of_float creet.coordinates.size)
+  creet.dom_elt##.style##.width := _get_px (int_of_float creet.coordinates.size) *)
+
+let _change_direction creet =
+  if creet.counter = creet.max_counter then (
+    creet.counter <- 0;
+    let step = Random.float 1. in
+    creet.coordinates.x_step <- max 0.25 step;
+    creet.coordinates.y_step <- max 0.25 (1. -. step))
+  else creet.counter <- creet.counter + 1
 
 let change_condition creet =
   let n = Random.int 100 in
@@ -78,6 +92,7 @@ let change_condition creet =
 
   creet.status.condition <- new_condition;
   creet.status.max_size <- _max_size_for_condition new_condition;
+
 
   if creet.status.condition <> Berserk then  _change_size creet;
   creet.dom_elt##.style##.backgroundColor := get_bg_color creet.status.condition;
@@ -91,6 +106,7 @@ let create ~x ~y () =
       a_class [ "creet" ];
       a_style ("position: absolute; left: " ^ string_of_int x ^ "px; top: " ^ string_of_int y ^ "px;")
   ] [] in
+  let step = Random.float 1. in
   let creet = {
     dom_elt = To_dom.of_div (elt ~x ~y);
     coordinates = {
@@ -99,11 +115,11 @@ let create ~x ~y () =
       x = (float_of_int x);
       x_min = 0;
       x_max = 1000;
-      x_dir = (if Random.bool () = true then 1. else -1.);
+      x_step = max 0.25 step;
       y = (float_of_int y);
       y_min = -15;
       y_max = 651;
-      y_dir = (if Random.bool () = true then 1. else -1.);
+      y_step = max 0.25 (1. -. step);
     };
     status = {condition = Healthy ; max_size = _max_size_for_condition Healthy};
     counter = 0;
@@ -118,17 +134,24 @@ let rec move creet =
   (* Firebug.console##log (Js.string (Printf.sprintf "y: %d, y_min: %d" creet.coordinates.y creet.coordinates.y_min)); *)
   if creet.coordinates.x <= (float_of_int creet.coordinates.x_min)
     || creet.coordinates.x >= (float_of_int creet.coordinates.x_max -. 50.0) then (
-    creet.coordinates.x_dir <- creet.coordinates.x_dir *. -1.;
+    creet.coordinates.x_step <- Float.neg creet.coordinates.x_step;
     _move creet
   )
   else if creet.coordinates.y <= (float_of_int creet.coordinates.y_min)
     ||
     creet.coordinates.y >= (float_of_int creet.coordinates.y_max -. 50.0) then (
     if creet.coordinates.y <= 0. && creet.status.condition = Healthy then change_condition creet;
-    creet.coordinates.y_dir <- creet.coordinates.y_dir *. -1.;
+    creet.coordinates.y_step <- Float.neg creet.coordinates.y_step;
     _move creet;
   );
-  if creet.status.condition = Berserk then _increase_size creet;
+  (match creet.status.condition with
+  | Berserk | Mean -> _change_size creet
+  | _ -> () );
+
+  (* if creet.status.condition = Berserk then _increase_berserk_size creet; *)
+
+  _change_direction creet;
+
   _move creet;
   move creet
 ]
