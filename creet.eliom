@@ -9,6 +9,7 @@ type creet_state = Healthy | Sick | Berserk | Mean
 
 type coordinates = {
   mutable speed : float;
+  mutable size: float;
   mutable x : float;
   mutable x_min : int;
   mutable x_max : int;
@@ -44,12 +45,20 @@ let _move creet =
   creet.dom_elt##.style##.left := _get_px (int_of_float creet.coordinates.x);
   creet.dom_elt##.style##.top := _get_px (int_of_float creet.coordinates.y)
 
+let _change_size creet =
+  creet.coordinates.size <- creet.coordinates.size *. 1.3;
+  creet.dom_elt##.style##.height := _get_px (int_of_float creet.coordinates.size);
+  creet.dom_elt##.style##.width := _get_px (int_of_float creet.coordinates.size)
+
+
 let change_state creet =
   let n = Random.int 100 in
-  if n < 10 then creet.coordinates.state <- Berserk
-  else if n >= 10 && n < 20 then creet.coordinates.state <- Mean
-  else creet.coordinates.state <- Sick;
+  creet.coordinates.state <-
+    (if n < 10 then  Berserk
+    else if n >= 10 && n < 20 then Mean
+    else Sick);
 
+  _change_size creet;
   creet.dom_elt##.style##.backgroundColor := get_bg_color creet.coordinates.state;
   creet.coordinates.speed <- creet.coordinates.speed *. 0.7;
   Firebug.console##log (Js.string ("Setting background color to: " ^
@@ -65,6 +74,7 @@ let create ~x ~y () =
     dom_elt = To_dom.of_div (elt ~x ~y);
     coordinates = {
       speed = 1.;
+      size = 50.;
       x = (float_of_int x);
       x_min = 0;
       x_max = 1000;
