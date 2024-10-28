@@ -12,10 +12,10 @@ type creet_status = {
 }
 
 let _max_size_for_condition = function
-  | Healthy -> 1.0
-  | Sick -> 1.0
-  | Berserk -> 4.0
-  | Mean -> 0.85
+  | Healthy -> 50.
+  | Sick -> 50.
+  | Berserk -> 50. *. 4.0
+  | Mean -> 50. *. 0.85
 
 type coordinates = {
   mutable size: float;
@@ -23,17 +23,19 @@ type coordinates = {
   mutable x : float;
   mutable x_min : int;
   mutable x_max : int;
-  mutable x_dir : int;
+  mutable x_dir : float;
   mutable y : float;
   mutable y_min : int;
   mutable y_max : int;
-  mutable y_dir : int;
+  mutable y_dir : float;
 }
 
 type creet = {
   dom_elt : Dom_html.divElement Js.t;
   status: creet_status;
-  coordinates: coordinates
+  coordinates: coordinates;
+  max_counter: int;
+  mutable counter: int;
 }
 
 let get_bg_color condition =
@@ -46,7 +48,7 @@ let get_bg_color condition =
 
 let _get_px number = Js.string (Printf.sprintf "%dpx" number)
 
-let _get_step position step speed = position +. (float_of_int step *. speed)
+let _get_step position step speed = position +. (step *. speed)
 
 let _move creet =
   creet.coordinates.x <- _get_step creet.coordinates.x  creet.coordinates.x_dir creet.coordinates.speed;
@@ -56,10 +58,15 @@ let _move creet =
   creet.dom_elt##.style##.top := _get_px (int_of_float creet.coordinates.y)
 
 let _change_size creet =
-  creet.coordinates.size <- creet.coordinates.size *. creet.status.max_size;
+  creet.coordinates.size <- creet.status.max_size;
   creet.dom_elt##.style##.height := _get_px (int_of_float creet.coordinates.size);
   creet.dom_elt##.style##.width := _get_px (int_of_float creet.coordinates.size)
 
+let _increase_size creet =
+  if creet.coordinates.size < creet.status.max_size then
+    creet.coordinates.size <- creet.coordinates.size +. 1.0;
+  creet.dom_elt##.style##.height := _get_px (int_of_float creet.coordinates.size);
+  creet.dom_elt##.style##.width := _get_px (int_of_float creet.coordinates.size)
 
 let change_condition creet =
   let n = Random.int 100 in
@@ -72,7 +79,7 @@ let change_condition creet =
   creet.status.condition <- new_condition;
   creet.status.max_size <- _max_size_for_condition new_condition;
 
-  _change_size creet;
+  if creet.status.condition <> Berserk then  _change_size creet;
   creet.dom_elt##.style##.backgroundColor := get_bg_color creet.status.condition;
   creet.coordinates.speed <- creet.coordinates.speed *. 0.85;
   Firebug.console##log (Js.string ("Setting background color to: " ^
@@ -92,13 +99,15 @@ let create ~x ~y () =
       x = (float_of_int x);
       x_min = 0;
       x_max = 1000;
-      x_dir = (if Random.bool () = true then 1 else -1);
+      x_dir = (if Random.bool () = true then 1. else -1.);
       y = (float_of_int y);
       y_min = -15;
       y_max = 651;
-      y_dir = (if Random.bool () = true then 1 else -1);
+      y_dir = (if Random.bool () = true then 1. else -1.);
     };
-    status = {condition = Healthy ; max_size = _max_size_for_condition Healthy}
+    status = {condition = Healthy ; max_size = _max_size_for_condition Healthy};
+    counter = 0;
+    max_counter = 2500 + Random.int 1000;
   } in
   creet.dom_elt##.style##.backgroundColor := get_bg_color creet.status.condition;
   creet
@@ -109,16 +118,17 @@ let rec move creet =
   (* Firebug.console##log (Js.string (Printf.sprintf "y: %d, y_min: %d" creet.coordinates.y creet.coordinates.y_min)); *)
   if creet.coordinates.x <= (float_of_int creet.coordinates.x_min)
     || creet.coordinates.x >= (float_of_int creet.coordinates.x_max -. 50.0) then (
-    creet.coordinates.x_dir <- creet.coordinates.x_dir * -1;
+    creet.coordinates.x_dir <- creet.coordinates.x_dir *. -1.;
     _move creet
   )
   else if creet.coordinates.y <= (float_of_int creet.coordinates.y_min)
     ||
     creet.coordinates.y >= (float_of_int creet.coordinates.y_max -. 50.0) then (
     if creet.coordinates.y <= 0. && creet.status.condition = Healthy then change_condition creet;
-    creet.coordinates.y_dir <- creet.coordinates.y_dir * -1;
+    creet.coordinates.y_dir <- creet.coordinates.y_dir *. -1.;
     _move creet;
   );
+  if creet.status.condition = Berserk then _increase_size creet;
   _move creet;
   move creet
 ]
