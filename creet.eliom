@@ -4,12 +4,22 @@ open Js_of_ocaml_lwt
 open Eliom_content.Html.D
 open Eliom_content.Html
 
+type creet_condition = Healthy | Sick | Berserk | Mean
 
-type creet_state = Healthy | Sick | Berserk | Mean
+type creet_status = {
+  mutable condition: creet_condition;
+  mutable max_size: float;
+}
+
+let _max_size_for_condition = function
+  | Healthy -> 1.0
+  | Sick -> 1.0
+  | Berserk -> 4.0
+  | Mean -> 0.85
 
 type coordinates = {
-  mutable speed : float;
   mutable size: float;
+  mutable speed : float;
   mutable x : float;
   mutable x_min : int;
   mutable x_max : int;
@@ -18,16 +28,16 @@ type coordinates = {
   mutable y_min : int;
   mutable y_max : int;
   mutable y_dir : int;
-  mutable state: creet_state;
 }
 
 type creet = {
   dom_elt : Dom_html.divElement Js.t;
+  status: creet_status;
   coordinates: coordinates
 }
 
-let get_bg_color state =
-  Js.string (match state with
+let get_bg_color condition =
+  Js.string (match condition with
     | Healthy -> "dodgerblue"
     | Sick -> "darkblue"
     | Berserk -> "darkcyan"
@@ -46,23 +56,27 @@ let _move creet =
   creet.dom_elt##.style##.top := _get_px (int_of_float creet.coordinates.y)
 
 let _change_size creet =
-  creet.coordinates.size <- creet.coordinates.size *. 1.3;
+  creet.coordinates.size <- creet.coordinates.size *. creet.status.max_size;
   creet.dom_elt##.style##.height := _get_px (int_of_float creet.coordinates.size);
   creet.dom_elt##.style##.width := _get_px (int_of_float creet.coordinates.size)
 
 
-let change_state creet =
+let change_condition creet =
   let n = Random.int 100 in
-  creet.coordinates.state <-
-    (if n < 10 then  Berserk
+  let new_condition =
+    if n < 10 then  Berserk
     else if n >= 10 && n < 20 then Mean
-    else Sick);
+    else Sick
+  in
+
+  creet.status.condition <- new_condition;
+  creet.status.max_size <- _max_size_for_condition new_condition;
 
   _change_size creet;
-  creet.dom_elt##.style##.backgroundColor := get_bg_color creet.coordinates.state;
-  creet.coordinates.speed <- creet.coordinates.speed *. 0.7;
+  creet.dom_elt##.style##.backgroundColor := get_bg_color creet.status.condition;
+  creet.coordinates.speed <- creet.coordinates.speed *. 0.85;
   Firebug.console##log (Js.string ("Setting background color to: " ^
-  (Js.to_string (get_bg_color creet.coordinates.state))));;
+  (Js.to_string (get_bg_color creet.status.condition))));;
 
 
 let create ~x ~y () =
@@ -83,10 +97,10 @@ let create ~x ~y () =
       y_min = -15;
       y_max = 651;
       y_dir = (if Random.bool () = true then 1 else -1);
-      state = Healthy
-    }
+    };
+    status = {condition = Healthy ; max_size = _max_size_for_condition Healthy}
   } in
-  creet.dom_elt##.style##.backgroundColor := get_bg_color creet.coordinates.state;
+  creet.dom_elt##.style##.backgroundColor := get_bg_color creet.status.condition;
   creet
 
 
@@ -101,7 +115,7 @@ let rec move creet =
   else if creet.coordinates.y <= (float_of_int creet.coordinates.y_min)
     ||
     creet.coordinates.y >= (float_of_int creet.coordinates.y_max -. 50.0) then (
-    if creet.coordinates.y <= 0. && creet.coordinates.state = Healthy then change_state creet;
+    if creet.coordinates.y <= 0. && creet.status.condition = Healthy then change_condition creet;
     creet.coordinates.y_dir <- creet.coordinates.y_dir * -1;
     _move creet;
   );
