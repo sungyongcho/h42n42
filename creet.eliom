@@ -36,6 +36,7 @@ type creet = {
   max_counter: int;
   mutable counter: int;
   mutable speed: float;
+  mutable global_speed: float ref;
   mutable size: float
 }
 
@@ -49,7 +50,7 @@ let get_bg_color condition =
 
 let _get_px number = Js.string (Printf.sprintf "%dpx" number)
 
-let _get_step position step speed = position +. (step *. speed)
+let _get_step position step speed global_speed = position +. (step *. (speed *. !global_speed) )
 
 let _get_random_steps () =
   let step = max 0.25 (Random.float 0.75) in
@@ -59,8 +60,8 @@ let _get_random_steps () =
     if Random.bool () = true then left_step else Float.neg left_step )
 
 let _move creet =
-  creet.coordinates.x <- _get_step creet.coordinates.x  creet.coordinates.x_step creet.speed;
-  creet.coordinates.y <- _get_step creet.coordinates.y  creet.coordinates.y_step creet.speed;
+  creet.coordinates.x <- _get_step creet.coordinates.x  creet.coordinates.x_step creet.speed creet.global_speed;
+  creet.coordinates.y <- _get_step creet.coordinates.y  creet.coordinates.y_step creet.speed creet.global_speed;
 
   creet.dom_elt##.style##.left := _get_px (int_of_float creet.coordinates.x);
   creet.dom_elt##.style##.top := _get_px (int_of_float creet.coordinates.y)
@@ -100,7 +101,7 @@ let change_condition creet =
   (Js.to_string (get_bg_color creet.status.condition))));;
 
 
-let create () =
+let create global_speed =
   let x = (max 10 (Random.int 590)) in
   let y = (max 50 (Random.int 650 - 50)) in
   let elt = div ~a:[
@@ -111,6 +112,7 @@ let create () =
   let creet = {
     dom_elt = To_dom.of_div elt;
     speed = 1.;
+    global_speed;
     size = 50.;
     coordinates = {
       x = (float_of_int x);
