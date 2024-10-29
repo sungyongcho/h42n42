@@ -52,9 +52,9 @@ let _get_px number = Js.string (Printf.sprintf "%dpx" number)
 let _get_step position step speed = position +. (step *. speed)
 
 let _get_random_steps () =
-  let step = Random.float 1. in
-  let top_step = max 0.25 step in
-  let left_step = max 0.25 (1. -. step) in
+  let step = max 0.25 (Random.float 0.75) in
+  let top_step = step in
+  let left_step = 1. -. step in
   ( (if Random.bool () = true then top_step else Float.neg top_step),
     if Random.bool () = true then left_step else Float.neg left_step )
 
@@ -100,14 +100,16 @@ let change_condition creet =
   (Js.to_string (get_bg_color creet.status.condition))));;
 
 
-let create ~x ~y () =
-  let elt ~x ~y = div ~a:[
+let create () =
+  let x = (max 10 (Random.int 590)) in
+  let y = (max 50 (Random.int 650 - 50)) in
+  let elt = div ~a:[
       a_class [ "creet" ];
       a_style ("position: absolute; left: " ^ string_of_int x ^ "px; top: " ^ string_of_int y ^ "px;")
   ] [] in
   let x_step, y_step = _get_random_steps () in
   let creet = {
-    dom_elt = To_dom.of_div (elt ~x ~y);
+    dom_elt = To_dom.of_div elt;
     speed = 1.;
     size = 50.;
     coordinates = {

@@ -1,6 +1,9 @@
 * {
     font-family: sans-serif;
 }
+body {
+    margin: unset;
+}
 .gameboard {
     width: 1000px;
     height: 700px;
