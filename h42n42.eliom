@@ -6,6 +6,30 @@ open Html.D
 ]
 
 [%%client
+open Js_of_ocaml_lwt
+open Playground
+
+let rec _move (playground : playground) creet =
+  let %lwt () = Lwt_js.sleep 0.001 in
+  if playground.game_on then (
+    Creet.move creet;
+    _move playground creet)
+  else Lwt.return ()
+
+let _is_game_over (playground : playground) =
+  let any_healthy (creet : Creet.creet) = creet.status.condition = Healthy in
+  List.length playground.creets = 0
+  || not (List.exists any_healthy playground.creets)
+
+let rec _check_game_state (playground : Playground.playground) =
+  let%lwt () = Lwt_js.sleep 0.01 in
+  if _is_game_over playground then (
+    playground.game_on <- false;
+    Eliom_lib.alert "GAME OVER";
+    Lwt.return ())
+  else
+    (* TODO playground.global_speed <- playground.global_speed +. 0.001; *)
+    _check_game_state playground
 
 let main () =
   Random.self_init ();
@@ -13,12 +37,14 @@ let main () =
 
   let creet1 = Creet.create ~x:1 ~y:0 () in
   Lwt.async (fun () -> Playground.add_creet playground creet1);
-  Lwt.async (fun () -> Creet.move creet1);
+  Lwt.async (fun () -> _move playground creet1);
 
   (* TODO: do smth about 650 - 50 *)
   let creet2 = Creet.create ~x:(max 10 (Random.int 590)) ~y:(max 50 650 - 50) () in
   Lwt.async (fun () -> Playground.add_creet playground creet2);
-  Lwt.async (fun () -> Creet.move creet2);
+  Lwt.async (fun () -> _move playground creet2);
+
+  Lwt.async (fun () -> _check_game_state playground);
 
   Lwt.return ()]
 

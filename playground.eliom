@@ -10,11 +10,14 @@ open Creet
 
 type playground = {
   dom_elt : Dom_html.divElement Js.t;
-  mutable creets : creet list }
+  mutable creets : creet list;
+  mutable game_on : bool
+}
 
 let get () = {
     dom_elt = Html.To_dom.of_div ~%elt;
-    creets = []
+    creets = [];
+    game_on = true
   }
 
 let add_creet playground (creet : creet) =

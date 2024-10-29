@@ -1,6 +1,5 @@
 [%%client
 open Js_of_ocaml
-open Js_of_ocaml_lwt
 open Eliom_content.Html.D
 open Eliom_content.Html
 
@@ -129,8 +128,7 @@ let create ~x ~y () =
   creet
 
 
-let rec move creet =
-  let%lwt () = Lwt_js.sleep 0.001 in
+let move creet =
   (* Firebug.console##log (Js.string (Printf.sprintf "y: %d, y_min: %d" creet.coordinates.y creet.coordinates.y_min)); *)
   if creet.coordinates.x <= (float_of_int creet.coordinates.x_min)
     || creet.coordinates.x >= (float_of_int creet.coordinates.x_max -. creet.size) then (
@@ -144,14 +142,11 @@ let rec move creet =
     creet.coordinates.y_step <- Float.neg creet.coordinates.y_step;
     _move creet;
   );
+
   (match creet.status.condition with
   | Berserk | Mean -> _change_size creet
   | _ -> () );
 
-  (* if creet.status.condition = Berserk then _increase_berserk_size creet; *)
-
   _change_direction creet;
-
-  _move creet;
-  move creet
+  _move creet
 ]
