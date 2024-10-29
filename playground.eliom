@@ -1,7 +1,8 @@
 [%%shared
 open Eliom_content.Html.D
 
-let elt = div ~a:[ a_class [ "playground" ]] []]
+let elt = div ~a:[ a_class [ "playground" ]] []
+let creets_counter_div = div ~a:[ a_class [ "creets-counter" ] ] []]
 
 [%%client
 open Eliom_content
@@ -11,24 +12,42 @@ open Creet
 
 type playground = {
   dom_elt : Dom_html.divElement Js.t;
+  mutable dom_creets_counter_span : Html_types.span elt;
   mutable iter : int;
   mutable creets : creet list;
   mutable global_speed : float ref;
   mutable game_on : bool
 }
 
-let get () = {
+let get () =
+  let playground = {
     iter = 0;
     dom_elt = Html.To_dom.of_div ~%elt;
+    dom_creets_counter_span = span [ txt "0 creets" ];
     creets = [];
     global_speed = ref 1.;
     game_on = true
-  }
+  } in
+  let dom_creets_counter_div = Html.To_dom.of_div ~%creets_counter_div in
+  let dom_creets_counter_span =
+    Html.To_dom.of_element playground.dom_creets_counter_span
+  in
+  Dom.appendChild dom_creets_counter_div dom_creets_counter_span;
+  playground
+
+let _update_dom_creets_counter playground =
+  let creets_nb = List.length playground.creets in
+  let plural = if creets_nb = 1 then ' ' else 's' in
+  let new_count = span [ txt (Printf.sprintf "%d creet%c" creets_nb plural) ] in
+  let old_count = playground.dom_creets_counter_span in
+  Html.Manip.replaceSelf old_count new_count;
+  playground.dom_creets_counter_span <- new_count
 
 let _add_creet playground =
   let creet = Creet.create playground.global_speed in
   Dom.appendChild playground.dom_elt creet.dom_elt;
-  playground.creets <- creet :: playground.creets
+  playground.creets <- creet :: playground.creets;
+  _update_dom_creets_counter playground
   (* Firebug.console##log_2 (Js.string "creets_nb") (List.length playground.creets); *)
 
 let _move_creet playground (creet : creet) =

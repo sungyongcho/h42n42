@@ -57,6 +57,7 @@ let%shared page () =
           Playground.elt;
           (* Hospital is a dashed line at the bottom *)
         ];
+        Playground.creets_counter_div;
     ]
 
 
