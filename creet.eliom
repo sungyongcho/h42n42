@@ -30,6 +30,7 @@ type coordinates = {
 }
 
 type creet = {
+  elt : Html_types.div elt;
   dom_elt : Dom_html.divElement Js.t;
   status: creet_status;
   coordinates: coordinates;
@@ -110,6 +111,7 @@ let create global_speed =
   ] [] in
   let x_step, y_step = _get_random_steps () in
   let creet = {
+    elt;
     dom_elt = To_dom.of_div elt;
     speed = 1.;
     global_speed;
