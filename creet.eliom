@@ -85,7 +85,7 @@ let _change_direction creet =
     creet.coordinates.y_step <- y_step )
   else creet.counter <- creet.counter + 1
 
-let change_condition creet =
+let _change_condition creet =
   let n = Random.int 100 in
   let new_condition =
     if n < 10 then  Berserk
@@ -101,6 +101,16 @@ let change_condition creet =
   Firebug.console##log (Js.string ("Setting background color to: " ^
   (Js.to_string (get_bg_color creet.status.condition))));;
 
+let _check_contact healthy sick =
+  let healthy_bottom = healthy.top +. healthy.size in
+  let healthy_right = healthy.left +. healthy.size in
+  let sick_bottom = sick.top +. sick.size in
+  let sick_right = sick.left +. sick.size in
+  if
+    healthy_bottom > sick.top && healthy_right > sick.left
+    && healthy.top < sick_bottom && healthy.left < sick_right
+  then true
+  else false
 
 let create global_speed =
   let x = (max 10 (Random.int 590)) in
@@ -144,7 +154,7 @@ let move creet =
   else if creet.coordinates.y <= (float_of_int creet.coordinates.y_min)
     ||
     creet.coordinates.y >= (float_of_int creet.coordinates.y_max -. creet.size) then (
-    if creet.coordinates.y <= 0. && creet.status.condition = Healthy then change_condition creet;
+    if creet.coordinates.y <= 0. && creet.status.condition = Healthy then _change_condition creet;
     creet.coordinates.y_step <- Float.neg creet.coordinates.y_step;
     _move creet;
   );
