@@ -1,7 +1,8 @@
 class Point {
-  constructor(x,y){
+  constructor(x, y, userData){
     this.x = x;
     this.y = y;
+    this.userData = userData;
   }
 }
 
@@ -20,8 +21,54 @@ class Rectangle {
       point.y <= this.y + this.h
     );
   }
+
+  intersects(range) {
+    return !(range.x - range.w > this.x + this.w ||
+      range.x + range.w < this.x - this.w ||
+      range.y - range.h > this.y + this.h ||
+      range.y + range.h < this.y - this.h
+    );
+  }
 }
 
+class Circle {
+  constructor(x,y,r){
+    this.x = x;
+    this.y = y;
+    this.r = r;
+    this.rSquared = this.r * this.r;
+  }
+
+  contains(point) {
+    let d = Math.pow((point.x - this.x), 2) + Math.pow((point.y - this.y), 2);
+    return d <= this.rSquared;
+  }
+
+  intersects(range) {
+
+    let xDist = Math.abs(range.x - this.x);
+    let yDist = Math.abs(range.y - this.y);
+
+    // radius of the circle
+    let r = this.r;
+
+    let w = range.w / 2;
+    let h = range.h / 2;
+
+    let edges = Math.pow((xDist - w), 2) + Math.pow((yDist - h), 2);
+
+    // no intersection
+    if (xDist > (r + w) || yDist > (r + h))
+      return false;
+
+    // intersection within the circle
+    if (xDist <= w || yDist <= h)
+      return true;
+
+    // intersection on the edge of the circle
+    return edges <= this.rSquared;
+  }
+}
 
 class QuadTree {
   constructor(boundary, n) {
@@ -62,13 +109,36 @@ class QuadTree {
       }
       if (this.northeast.insert(point))
         return true;
-      if (this.northwest.insert(point))
+      else if (this.northwest.insert(point))
         return true;
-      if (this.southeast.insert(point))
+      else if (this.southeast.insert(point))
         return true;
-      if (this.southwest.insert(point))
+      else if (this.southwest.insert(point))
         return true;
     }
+  }
+
+  query(range, found) {
+    if (!found){
+      found = [];
+    }
+    if (!this.boundary.intersects(range)){
+      return;
+    } else {
+      for (let p of this.points) {
+        if (range.contains(p)){
+          count++;
+          found.push(p);
+        }
+      }
+      if (this.divided) {
+        this.northeast.query(range, found);
+        this.northwest.query(range, found);
+        this.southeast.query(range, found);
+        this.southwest.query(range, found);
+      }
+    }
+    return found;
   }
 
   show() {
