@@ -6,8 +6,9 @@ let creets_counter_div = div ~a:[ a_class [ "creets-counter" ] ] []]
 
 [%%client
 open Eliom_content
-open Js_of_ocaml_lwt
+(* open Js_of_ocaml_lwt *)
 open Creet
+open Quadtree
 
 type playground = {
   mutable iter : int;
@@ -58,8 +59,8 @@ let _is_game_over (playground : playground) =
 
 let _increment_global_speed gs = gs := !gs +. 0.0001
 
-let rec _play playground =
-  let%lwt () = Lwt_js.sleep 0.005 in
+let  _play playground =
+  (* let%lwt () = Lwt_js.sleep 0.005 in *)
   let game_on = Creet.check_healthy_creets playground.creets in
   if not game_on then (
     playground.game_on <- false;
@@ -72,12 +73,16 @@ let rec _play playground =
       _add_creet playground;
       playground.iter <- 0
     ); *)
-    List.iter (_move_creet playground) playground.creets;
+    let boundary = { x = 0.; y=0.; w = 1000.; h = 700.;} in
+    let qt = Quadtree.create_quadtree boundary 4 in
+    List.iter (fun creet -> ignore (Quadtree.insert qt creet)) playground.creets;
+    (* List.iter (_move_creet playground) playground.creets; *)
     (* TODO playground.global_speed <- playground.global_speed +. 0.001; *)
-    _play playground
+    (* _play playground *)
+    Lwt.return ()
   )
 let play playground =
-  for _ = 1 to 7 do
+  for _ = 1 to 5 do
     _add_creet playground
   done;
   Lwt.async (fun () -> _play playground);
