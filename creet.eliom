@@ -129,7 +129,7 @@ let check_healthy_creets creets =
 
 
 let create global_speed =
-  let x = (max 10 (Random.int 590)) in
+  let x = (max 10 (Random.int 1000 - 50)) in
   let y = (max 50 (Random.int 650 - 50)) in
   let elt = div ~a:[
       a_class [ "creet" ];

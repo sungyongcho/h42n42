@@ -73,7 +73,7 @@ let  _play playground =
       _add_creet playground;
       playground.iter <- 0
     ); *)
-    let boundary = { x = 0.; y=0.; w = 1000.; h = 700.;} in
+    let boundary = { x = 1000. /. 2.; y = 700. /. 2.; w = 1000. /. 2.; h = 700. /. 2. } in
     let qt = Quadtree.create_quadtree boundary 4 in
     List.iter (fun creet -> ignore (Quadtree.insert qt creet)) playground.creets;
     (* List.iter (_move_creet playground) playground.creets; *)
@@ -82,7 +82,7 @@ let  _play playground =
     Lwt.return ()
   )
 let play playground =
-  for _ = 1 to 5 do
+  for _ = 1 to 3 do
     _add_creet playground
   done;
   Lwt.async (fun () -> _play playground);
