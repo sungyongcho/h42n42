@@ -101,16 +101,32 @@ let _change_condition creet =
   Firebug.console##log (Js.string ("Setting background color to: " ^
   (Js.to_string (get_bg_color creet.status.condition))));;
 
-let _check_contact healthy sick =
-  let healthy_bottom = healthy.top +. healthy.size in
-  let healthy_right = healthy.left +. healthy.size in
-  let sick_bottom = sick.top +. sick.size in
-  let sick_right = sick.left +. sick.size in
+let _intersects healthy sick =
+  let healthy_right = healthy.coordinates.x +. healthy.size in
+  let healthy_bottom = healthy.coordinates.y +. healthy.size in
+  let sick_right = sick.coordinates.x +. sick.size in
+  let sick_bottom = sick.coordinates.y +. sick.size in
   if
-    healthy_bottom > sick.top && healthy_right > sick.left
-    && healthy.top < sick_bottom && healthy.left < sick_right
-  then true
-  else false
+    healthy_bottom > sick.coordinates.y && healthy_right > sick.coordinates.x
+    && healthy.coordinates.y < sick_bottom && healthy.coordinates.x < sick_right
+  then (
+    Firebug.console##log (Js.string "contact")
+  )
+  else ()
+
+
+let check_healthy_creets creets =
+  let healthy_creets =
+    List.filter (fun creet -> creet.status.condition = Healthy) creets
+  in
+  let sick_creets = List.filter (fun creet -> creet.status.condition != Healthy) creets in
+  let iter_healthy healthy =
+    List.iter (_intersects healthy) sick_creets
+  in
+  List.iter iter_healthy healthy_creets;
+  (* let sick_creets = List.filter (fun creet -> creet.status.condition == sick) creets *)
+  List.exists (fun creet -> creet.status.condition = Healthy) creets
+
 
 let create global_speed =
   let x = (max 10 (Random.int 590)) in

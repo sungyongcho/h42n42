@@ -59,24 +59,25 @@ let _is_game_over (playground : playground) =
 let _increment_global_speed gs = gs := !gs +. 0.0001
 
 let rec _play playground =
-  let%lwt () = Lwt_js.sleep 0.01 in
-  if _is_game_over playground then (
+  let%lwt () = Lwt_js.sleep 0.005 in
+  let game_on = Creet.check_healthy_creets playground.creets in
+  if not game_on then (
     playground.game_on <- false;
     Eliom_lib.alert "GAME OVER";
     Lwt.return ())
   else (
     _increment_global_speed playground.global_speed;
     playground.iter <- playground.iter + 1;
-    if playground.iter = 200 then (
+    (* if playground.iter = 200 then (
       _add_creet playground;
       playground.iter <- 0
-    );
+    ); *)
     List.iter (_move_creet playground) playground.creets;
     (* TODO playground.global_speed <- playground.global_speed +. 0.001; *)
     _play playground
   )
 let play playground =
-  for _ = 1 to 3 do
+  for _ = 1 to 7 do
     _add_creet playground
   done;
   Lwt.async (fun () -> _play playground);
