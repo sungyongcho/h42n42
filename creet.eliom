@@ -21,12 +21,12 @@ let _max_size_for_condition = function
 
 type coordinates = {
   mutable x : float;
-  mutable x_min : int;
-  mutable x_max : int;
+  mutable x_min : float;
+  mutable x_max : float;
   mutable x_step : float;
   mutable y : float;
-  mutable y_min : int;
-  mutable y_max : int;
+  mutable y_min : float;
+  mutable y_max : float;
   mutable y_step : float;
 }
 
@@ -39,7 +39,8 @@ type creet = {
   mutable counter: int;
   mutable speed: float;
   mutable global_speed: float ref;
-  mutable size: float
+  mutable size: float;
+  mutable available: bool
 }
 
 let get_bg_color condition =
@@ -102,9 +103,24 @@ let _change_condition creet =
   Firebug.console##log (Js.string ("Setting background color to: " ^
   (Js.to_string (get_bg_color creet.status.condition))));;
 
-let _event_handler _creet event = Firebug.console##log event
+  let _event_handler creet event =
+    let container = Dom_html.document##.body in
+    let container_rect = container##getBoundingClientRect in
+    let container_left = container_rect##.left in
+    let container_top = container_rect##.top in
+
+    let radius = creet.size /. 2. in
+    let left = float_of_int event##.clientX -. (Js.to_float container_left) -. radius in
+    let top = float_of_int event##.clientY -. (Js.to_float container_top) -. radius in
+
+    creet.coordinates.x <- max creet.coordinates.x_min (min (creet.coordinates.x_max -. creet.size) left);
+    creet.coordinates.y <- max creet.coordinates.y_min (min (creet.coordinates.y_max -. creet.size) top);
+
+    creet.dom_elt##.style##.left := _get_px (int_of_float creet.coordinates.x);
+    creet.dom_elt##.style##.top := _get_px (int_of_float creet.coordinates.y)
 
 let _handle_events creet mouse_down _ =
+  creet.available <- false;
   _event_handler creet mouse_down;
   Lwt.pick
     [
@@ -113,6 +129,7 @@ let _handle_events creet mouse_down _ =
           Lwt.return ());
       (let%lwt mouse_up = Lwt_js_events.mouseup Dom_html.document in
         _event_handler creet mouse_up;
+        creet.available <- true;
         Lwt.return ());
     ]
 
@@ -134,14 +151,15 @@ let create global_speed =
     speed = 1.;
     global_speed;
     size = 50.;
+    available = true;
     coordinates = {
       x = (float_of_int x);
-      x_min = 0;
-      x_max = 1000;
+      x_min = 0.;
+      x_max = 1000.;
       x_step;
       y = (float_of_int y);
-      y_min = -15;
-      y_max = 651;
+      y_min = -15.;
+      y_max = 651.;
       y_step;
     };
     status = {condition = Healthy ; max_size = _max_size_for_condition Healthy};
@@ -155,14 +173,14 @@ let create global_speed =
 
 let move creet =
   (* Firebug.console##log (Js.string (Printf.sprintf "y: %d, y_min: %d" creet.coordinates.y creet.coordinates.y_min)); *)
-  if creet.coordinates.x <= (float_of_int creet.coordinates.x_min)
-    || creet.coordinates.x >= (float_of_int creet.coordinates.x_max -. creet.size) then (
+  if creet.coordinates.x <= creet.coordinates.x_min
+    || creet.coordinates.x >=  creet.coordinates.x_max -. creet.size then (
     creet.coordinates.x_step <- Float.neg creet.coordinates.x_step;
     _move creet
   )
-  else if creet.coordinates.y <= (float_of_int creet.coordinates.y_min)
+  else if creet.coordinates.y <= creet.coordinates.y_min
     ||
-    creet.coordinates.y >= (float_of_int creet.coordinates.y_max -. creet.size) then (
+    creet.coordinates.y >= creet.coordinates.y_max -. creet.size then (
     if creet.coordinates.y <= 0. && creet.status.condition = Healthy then _change_condition creet;
     creet.coordinates.y_step <- Float.neg creet.coordinates.y_step;
     _move creet;
