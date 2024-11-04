@@ -159,7 +159,7 @@ let _check_sick_creet_collisions qt creets =
     let query_range = {
       x = creet.coordinates.x;
       y = creet.coordinates.y;
-      r = creet.size /. 2.;
+      r = creet.size /. 4.;
     } in
     (* Query for Healthy creets intersecting with the sick creet *)
     let found_creets = query qt query_range in

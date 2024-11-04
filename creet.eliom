@@ -1,5 +1,6 @@
 [%%client
 open Js_of_ocaml
+open Js_of_ocaml_lwt
 open Eliom_content.Html.D
 open Eliom_content.Html
 
@@ -101,19 +102,19 @@ let _change_condition creet =
   Firebug.console##log (Js.string ("Setting background color to: " ^
   (Js.to_string (get_bg_color creet.status.condition))));;
 
-let _intersects healthy sick =
-  let healthy_right = healthy.coordinates.x +. healthy.size in
-  let healthy_bottom = healthy.coordinates.y +. healthy.size in
-  let sick_right = sick.coordinates.x +. sick.size in
-  let sick_bottom = sick.coordinates.y +. sick.size in
-  if
-    healthy_bottom > sick.coordinates.y && healthy_right > sick.coordinates.x
-    && healthy.coordinates.y < sick_bottom && healthy.coordinates.x < sick_right
-  then (
-    Firebug.console##log (Js.string "contact")
-  )
-  else ()
+let _event_handler _creet event = Firebug.console##log event
 
+let _handle_events creet mouse_down _ =
+  _event_handler creet mouse_down;
+  Lwt.pick
+    [
+      Lwt_js_events.mousemoves Dom_html.document (fun mouse_move _ ->
+          _event_handler creet mouse_move;
+          Lwt.return ());
+      (let%lwt mouse_up = Lwt_js_events.mouseup Dom_html.document in
+        _event_handler creet mouse_up;
+        Lwt.return ());
+    ]
 
 let check_healthy_creets creets =
   List.exists (fun creet -> creet.status.condition = Healthy) creets
@@ -148,6 +149,7 @@ let create global_speed =
     max_counter = 2500 + Random.int 1000;
   } in
   creet.dom_elt##.style##.backgroundColor := get_bg_color creet.status.condition;
+  Lwt.async (fun () -> Lwt_js_events.mousedowns creet.dom_elt (_handle_events creet));
   creet
 
 
