@@ -80,19 +80,35 @@ let _change_size creet =
 let _change_direction creet =
   if creet.status.condition = Mean then
     creet.counter <- 0
-  else if creet.counter = creet.max_counter then (
+  else if creet.counter >= creet.max_counter ||
+          creet.coordinates.x <= creet.coordinates.x_min ||
+          creet.coordinates.x +. creet.size >= creet.coordinates.x_max ||
+          creet.coordinates.y <= creet.coordinates.y_min ||
+          creet.coordinates.y +. creet.size >= creet.coordinates.y_max then (
     creet.counter <- 0;
     let x_step, y_step = _get_random_steps () in
     creet.coordinates.x_step <- x_step;
-    creet.coordinates.y_step <- y_step )
-  else creet.counter <- creet.counter + 1
+    creet.coordinates.y_step <- y_step;
+
+    (* Ensure the new steps do not push the creet out of bounds *)
+    if creet.coordinates.x +. (creet.size /. 2.) +. (x_step *. creet.speed *. !(creet.global_speed)) >= creet.coordinates.x_max ||
+        creet.coordinates.x -. (creet.size /. 2.) +. (x_step *. creet.speed *. !(creet.global_speed)) <= creet.coordinates.x_min then
+      creet.coordinates.x_step <- Float.neg creet.coordinates.x_step;
+
+    if creet.coordinates.y +. (creet.size /. 2.) +. (y_step *. creet.speed *. !(creet.global_speed)) >= creet.coordinates.y_max ||
+        creet.coordinates.y -. (creet.size /. 2.) +. (y_step *. creet.speed *. !(creet.global_speed)) <= creet.coordinates.y_min then
+      creet.coordinates.y_step <- Float.neg creet.coordinates.y_step;
+  )
+  else
+    creet.counter <- creet.counter + 1
 
 let _change_condition creet =
-  let n = Random.int 100 in
-  let new_condition =
+  (* let n = Random.int 100 in *)
+  (* let new_condition =
     if n < 10 then  Berserk
     else if n >= 10 && n < 20 then Mean
-    else Sick
+    else Sick *)
+  let new_condition = Berserk
   in
 
   creet.status.condition <- new_condition;

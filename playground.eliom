@@ -62,18 +62,14 @@ let _increment_global_speed gs = gs := !gs +. 0.0001
 let rec _play playground =
   let%lwt () = Lwt_js.sleep 0.01 in
   let game_on = Creet.check_healthy_creets playground.creets in
-  if not game_on then (
-    playground.game_on <- false;
-    Eliom_lib.alert "GAME OVER";
-    Lwt.return ())
-  else (
+  if game_on then (
     _increment_global_speed playground.global_speed;
     playground.iter <- playground.iter + 1;
     if playground.iter = 2000 then (
       _add_creet playground;
       playground.iter <- 0
     );
-    let boundary = { x = 1000. /. 2.; y= 700. /. 2. ; w = 1000. /. 2.; h = 700. /. 2.;} in
+    let boundary = { x = 1000. /. 2.; y=  700. -. 70. /. 2.  ; w = 1000. /. 2.; h = 700. -. 70. /. 2.;} in
     let qt = Quadtree.create_quadtree boundary 4 in
     List.iter (fun creet -> ignore (Quadtree.insert qt creet)) playground.creets;
     (* Iterate over each creet *)
@@ -86,6 +82,11 @@ let rec _play playground =
 
     (* TODO playground.global_speed <- playground.global_speed +. 0.001; *)
     _play playground
+  )
+  else (
+    playground.game_on <- false;
+    Eliom_lib.alert "GAME OVER";
+    Lwt.return ()
   )
 let play playground =
   for _ = 1 to 7 do

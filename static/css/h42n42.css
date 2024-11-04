@@ -3,6 +3,8 @@
 }
 body {
     margin: unset;
+    -webkit-user-select: none;
+    user-select: none;
 }
 .gameboard {
     width: 1000px;
@@ -18,11 +20,19 @@ body {
 }
 
 .river {
-    height: 7%;
+    height: 10%;
     background-color: #4ab3b4;
 }
 
 .playground {
+    position: relative; /* Added */
+    height: 90%;
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+
+.hospital {
     position: relative; /* Added */
     height: 93%;
     margin: 0;
