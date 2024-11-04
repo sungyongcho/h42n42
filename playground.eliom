@@ -6,7 +6,8 @@ let creets_counter_div = div ~a:[ a_class [ "creets-counter" ] ] []]
 
 [%%client
 open Eliom_content
-(* open Js_of_ocaml_lwt *)
+open Js_of_ocaml_lwt
+open Js_of_ocaml
 open Creet
 open Quadtree
 
@@ -59,8 +60,8 @@ let _is_game_over (playground : playground) =
 
 let _increment_global_speed gs = gs := !gs +. 0.0001
 
-let  _play playground =
-  (* let%lwt () = Lwt_js.sleep 0.005 in *)
+let rec _play playground =
+  let%lwt () = Lwt_js.sleep 0.1 in
   let game_on = Creet.check_healthy_creets playground.creets in
   if not game_on then (
     playground.game_on <- false;
@@ -69,23 +70,47 @@ let  _play playground =
   else (
     _increment_global_speed playground.global_speed;
     playground.iter <- playground.iter + 1;
-    (* if playground.iter = 200 then (
+    if playground.iter = 2000 then (
       _add_creet playground;
       playground.iter <- 0
-    ); *)
-    let boundary = { x = 1000. /. 2.; y = 700. /. 2.; w = 1000. /. 2.; h = 700. /. 2. } in
+    );
+    let boundary = { x = 1000. /. 2.; y= 700. /. 2. ; w = 1000. /. 2.; h = 700. /. 2.;} in
     let qt = Quadtree.create_quadtree boundary 4 in
     List.iter (fun creet -> ignore (Quadtree.insert qt creet)) playground.creets;
-    (* List.iter (_move_creet playground) playground.creets; *)
+    (* Iterate over each creet *)
+    List.iter (_move_creet playground) playground.creets;
+
+    List.iter (fun creet ->
+      (* Define the query range as the creet itself *)
+      let query_range = {
+        x = creet.coordinates.x;
+        y = creet.coordinates.y;
+        r = creet.size /. 2.;  (* Assuming creet is a circle with radius size/2 *)
+      } in
+
+      (* Query the quadtree *)
+      let found_creets = Quadtree.query qt query_range in
+
+      (* Exclude the creet itself from the results *)
+      let other_creets = List.filter (fun c -> c != creet) found_creets in
+
+      (* Get the number of intersecting creets *)
+      let num_intersections = List.length other_creets in
+
+      (* Alternatively, log to browser console if using Js_of_ocaml *)
+      if num_intersections > 0 then
+        Firebug.console##log (Js.string (Printf.sprintf "Creet at (%.2f, %.2f) intersects with %d other creets."
+            creet.coordinates.x creet.coordinates.y num_intersections));
+
+    ) playground.creets;
+
     (* TODO playground.global_speed <- playground.global_speed +. 0.001; *)
-    (* _play playground *)
-    Lwt.return ()
+    _play playground
   )
 let play playground =
-  for _ = 1 to 3 do
+  for _ = 1 to 7 do
     _add_creet playground
   done;
   Lwt.async (fun () -> _play playground);
   Lwt.return ()
-
 ]

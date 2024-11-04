@@ -1,5 +1,6 @@
 [%%client
 open Creet
+open Js_of_ocaml
 
 type rectangle = {
   x: float;  (* Center x-coordinate *)
@@ -8,7 +9,13 @@ type rectangle = {
   h: float;  (* Half-height *)
 }
 
-let contains rect creet =
+type circle = {
+  x: float;
+  y: float;
+  r: float;
+}
+
+let contains (rect: rectangle) creet =
   creet.coordinates.x >= rect.x -. rect.w &&
   creet.coordinates.x <= rect.x +. rect.w &&
   creet.coordinates.y >= rect.y -. rect.h &&
@@ -70,19 +77,78 @@ let rec insert qt creet =
     match qt.northwest, qt.northeast, qt.southwest, qt.southeast with
     | Some nw, Some ne, Some sw, Some se ->
       if insert nw creet then (
-        Printf.printf "Creet inserted into northwest quadrant.\n";
+        Firebug.console##log (Js.string "Creet inserted into northwest quadrant.");
         true
       ) else if insert ne creet then (
-        Printf.printf "Creet inserted into northeast quadrant.\n";
+        Firebug.console##log (Js.string "Creet inserted into northeast quadrant.");
         true
       ) else if insert sw creet then (
-        Printf.printf "Creet inserted into southwest quadrant.\n";
+        Firebug.console##log (Js.string "Creet inserted into southwest quadrant.");
         true
       ) else if insert se creet then (
-        Printf.printf "Creet inserted into southeast quadrant.\n";
+        Firebug.console##log (Js.string "Creet inserted into southeast quadrant.");
         true
       ) else
         false
     | _ -> false
   )
+
+let boundary_intersects_range (boundary: rectangle) (range: circle) =
+  let x_dist = abs_float (range.x -. boundary.x) in
+  let y_dist = abs_float (range.y -. boundary.y) in
+  let w = boundary.w in
+  let h = boundary.h in
+  let r = range.r in
+
+  if x_dist > (w +. r) || y_dist > (h +. r) then
+    false  (* No intersection *)
+  else if x_dist <= w || y_dist <= h then
+    true   (* Circle intersects within the rectangle's sides *)
+  else
+    let corner_distance_sq =
+      (x_dist -. w) ** 2.0 +. (y_dist -. h) ** 2.0
+    in
+    corner_distance_sq <= r ** 2.0  (* Circle intersects at the corners *)
+
+let range_intersects_creet (range: circle) (creet: creet) =
+  let dx = range.x -. creet.coordinates.x in
+  let dy = range.y -. creet.coordinates.y in
+  let distance_sq = dx *. dx +. dy *. dy in
+  let radii_sum = range.r +. (creet.size /. 2.) in
+  distance_sq <= radii_sum *. radii_sum
+
+let rec query ?(found=[]) qt range =
+  if not (boundary_intersects_range qt.boundary range) then
+    found  (* If boundary doesn't intersect range, return current found list *)
+  else
+    let found =
+      List.fold_left
+        (fun acc creet ->
+          if range_intersects_creet range creet then
+            creet :: acc
+          else
+            acc)
+        found
+        qt.creets
+    in
+    if qt.divided then
+      let found = match qt.northwest with
+        | Some nw -> query ~found nw range
+        | None -> found
+      in
+      let found = match qt.northeast with
+        | Some ne -> query ~found ne range
+        | None -> found
+      in
+      let found = match qt.southwest with
+        | Some sw -> query ~found sw range
+        | None -> found
+      in
+      let found = match qt.southeast with
+        | Some se -> query ~found se range
+        | None -> found
+      in
+      found
+    else
+      found
 ]

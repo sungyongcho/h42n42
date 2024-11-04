@@ -75,11 +75,11 @@ function draw(){
   for (let p of particles){
     let range = new Circle(p.x, p.y, p.r * 2);
     let points = qtree.query(range);
-    for (let point of points) {
-      let other = point.userData;
-      if (p !== other && p.intersects(other)){
-        p.setHighlight(true);
-      }
-    }
+    // for (let point of points) {
+    //   let other = point.userData;
+    //   if (p !== other && p.intersects(other)){
+    //     p.setHighlight(true);
+    //   }
+    // }
   }
 }
