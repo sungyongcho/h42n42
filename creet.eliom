@@ -116,15 +116,6 @@ let _intersects healthy sick =
 
 
 let check_healthy_creets creets =
-  let healthy_creets =
-    List.filter (fun creet -> creet.status.condition = Healthy) creets
-  in
-  let sick_creets = List.filter (fun creet -> creet.status.condition != Healthy) creets in
-  let iter_healthy healthy =
-    List.iter (_intersects healthy) sick_creets
-  in
-  List.iter iter_healthy healthy_creets;
-  (* let sick_creets = List.filter (fun creet -> creet.status.condition == sick) creets *)
   List.exists (fun creet -> creet.status.condition = Healthy) creets
 
 

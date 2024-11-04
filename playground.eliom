@@ -7,7 +7,6 @@ let creets_counter_div = div ~a:[ a_class [ "creets-counter" ] ] []]
 [%%client
 open Eliom_content
 open Js_of_ocaml_lwt
-open Js_of_ocaml
 open Creet
 open Quadtree
 
@@ -61,7 +60,7 @@ let _is_game_over (playground : playground) =
 let _increment_global_speed gs = gs := !gs +. 0.0001
 
 let rec _play playground =
-  let%lwt () = Lwt_js.sleep 0.1 in
+  let%lwt () = Lwt_js.sleep 0.01 in
   let game_on = Creet.check_healthy_creets playground.creets in
   if not game_on then (
     playground.game_on <- false;
@@ -80,29 +79,8 @@ let rec _play playground =
     (* Iterate over each creet *)
     List.iter (_move_creet playground) playground.creets;
 
-    List.iter (fun creet ->
-      (* Define the query range as the creet itself *)
-      let query_range = {
-        x = creet.coordinates.x;
-        y = creet.coordinates.y;
-        r = creet.size /. 2.;  (* Assuming creet is a circle with radius size/2 *)
-      } in
-
-      (* Query the quadtree *)
-      let found_creets = Quadtree.query qt query_range in
-
-      (* Exclude the creet itself from the results *)
-      let other_creets = List.filter (fun c -> c != creet) found_creets in
-
-      (* Get the number of intersecting creets *)
-      let num_intersections = List.length other_creets in
-
-      (* Alternatively, log to browser console if using Js_of_ocaml *)
-      if num_intersections > 0 then
-        Firebug.console##log (Js.string (Printf.sprintf "Creet at (%.2f, %.2f) intersects with %d other creets."
-            creet.coordinates.x creet.coordinates.y num_intersections));
-
-    ) playground.creets;
+    (* Check collisions for sick creets *)
+    _check_sick_creet_collisions qt playground.creets;
 
     (* TODO playground.global_speed <- playground.global_speed +. 0.001; *)
     _play playground

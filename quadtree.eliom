@@ -69,7 +69,7 @@ let rec insert qt creet =
     false
   else if List.length qt.creets < qt.capacity then (
     qt.creets <- creet :: qt.creets;
-    Printf.printf "Inserted creet directly into current quadtree.\n";
+    (* Printf.printf "Inserted creet directly into current quadtree.\n"; *)
     true
   ) else (
     if not qt.divided then subdivide qt;
@@ -77,16 +77,16 @@ let rec insert qt creet =
     match qt.northwest, qt.northeast, qt.southwest, qt.southeast with
     | Some nw, Some ne, Some sw, Some se ->
       if insert nw creet then (
-        Firebug.console##log (Js.string "Creet inserted into northwest quadrant.");
+        (* Firebug.console##log (Js.string "Creet inserted into northwest quadrant."); *)
         true
       ) else if insert ne creet then (
-        Firebug.console##log (Js.string "Creet inserted into northeast quadrant.");
+        (* Firebug.console##log (Js.string "Creet inserted into northeast quadrant."); *)
         true
       ) else if insert sw creet then (
-        Firebug.console##log (Js.string "Creet inserted into southwest quadrant.");
+        (* Firebug.console##log (Js.string "Creet inserted into southwest quadrant."); *)
         true
       ) else if insert se creet then (
-        Firebug.console##log (Js.string "Creet inserted into southeast quadrant.");
+        (* Firebug.console##log (Js.string "Creet inserted into southeast quadrant."); *)
         true
       ) else
         false
@@ -124,7 +124,7 @@ let rec query ?(found=[]) qt range =
     let found =
       List.fold_left
         (fun acc creet ->
-          if range_intersects_creet range creet then
+          if range_intersects_creet range creet && creet.status.condition = Healthy then
             creet :: acc
           else
             acc)
@@ -151,4 +151,28 @@ let rec query ?(found=[]) qt range =
       found
     else
       found
+
+let _check_sick_creet_collisions qt creets =
+  (* Filter sick creets *)
+  let sick_creets = List.filter (fun creet -> creet.status.condition != Healthy) creets in
+  List.iter (fun creet ->
+    let query_range = {
+      x = creet.coordinates.x;
+      y = creet.coordinates.y;
+      r = creet.size /. 2.;
+    } in
+    (* Query for Healthy creets intersecting with the sick creet *)
+    let found_creets = query qt query_range in
+    (* Iterate over each found Healthy creet *)
+    List.iter (fun found_creet ->
+      if Random.int 100 < 2 then (
+        (* Change the condition of the Healthy creet to simulate infection *)
+        _change_condition found_creet;
+        (* Log the infection event *)
+        Firebug.console##log (Js.string (Printf.sprintf "Sick creet at (%.2f, %.2f) infects Healthy creet at (%.2f, %.2f)"
+          creet.coordinates.x creet.coordinates.y
+          found_creet.coordinates.x found_creet.coordinates.y));
+      )
+    ) found_creets
+  ) sick_creets
 ]
