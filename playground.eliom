@@ -77,7 +77,9 @@ let rec _play playground =
     let qt = Quadtree.create_quadtree boundary 4 in
     List.iter (fun creet -> ignore (Quadtree.insert qt creet)) playground.creets;
     (* Iterate over each creet *)
-    List.iter (_move_creet playground) playground.creets;
+    let available_creets = List.filter (fun creet -> creet.available = true) playground.creets in
+
+    List.iter (_move_creet playground) available_creets;
 
     (* Check collisions for sick creets *)
     _check_sick_creet_collisions qt playground.creets;
