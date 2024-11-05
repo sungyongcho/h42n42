@@ -5,6 +5,7 @@ let elt = div ~a:[ a_class [ "playground" ]] []
 let creets_counter_div = div ~a:[ a_class [ "creets-counter" ] ] []]
 
 [%%client
+open Params
 open Eliom_content
 open Js_of_ocaml_lwt
 open Creet
@@ -69,7 +70,12 @@ let rec _play playground =
       _add_creet playground;
       playground.iter <- 0
     );
-    let boundary = { x = 1000. /. 2.; y=  700. -. 70. /. 2.  ; w = 1000. /. 2.; h = 700. -. 70. /. 2.;} in
+    let boundary = {
+      x = (float_of_int gameboard_width)/. 2.;
+      y = (float_of_int gameboard_height) /. 2. +. (float_of_int river_height);
+      w = (float_of_int gameboard_width) /. 2.;
+      h = (float_of_int gameboard_height -. float_of_int river_height -. float_of_int hospital_height) /. 2.;
+    } in
     let qt = Quadtree.create_quadtree boundary 4 in
     List.iter (fun creet -> ignore (Quadtree.insert qt creet)) playground.creets;
     (* Iterate over each creet *)
