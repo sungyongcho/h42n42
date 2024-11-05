@@ -75,11 +75,11 @@ let rec move creet =
   let%lwt () = Lwt_js.sleep 0.005 in
   (* Firebug.console##log (Js.string (Printf.sprintf "y: %d, y_min: %d" creet.coordinates.y creet.coordinates.y_min)); *)
   if creet.coordinates.x <= creet.coordinates.x_min
-    || creet.coordinates.x >= (creet.coordinates.x_max - (base_creet_size / 2)) then (
+    || creet.coordinates.x >= (creet.coordinates.x_max - (creet_base_size / 2)) then (
     creet.coordinates.x_dir <- creet.coordinates.x_dir * -1
   );
   if creet.coordinates.y <= creet.coordinates.y_min
-    || creet.coordinates.y >= (creet.coordinates.y_max - (base_creet_size / 2)) then (
+    || creet.coordinates.y >= (creet.coordinates.y_max - (creet_base_size / 2)) then (
     if creet.coordinates.y <= 0 then change_state creet Sick;
     creet.coordinates.y_dir <- creet.coordinates.y_dir * -1
   );
