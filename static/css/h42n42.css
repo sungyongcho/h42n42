@@ -1,3 +1,7 @@
+:root {
+	/* CSS variables are set from the OCaml code */
+  }
+
 * {
     font-family: sans-serif;
 }
@@ -6,37 +10,34 @@ body {
     -webkit-user-select: none;
     user-select: none;
 }
-
 .gameboard {
-    width: 1000px;
-    height: 700px;
-    margin: 0;
-    padding: 0;
-    gap: 0;
-    display: flex;
-    flex-direction: column; /* Stacks elements vertically */
+	width: var(--gameboard-width);
+	height: var(--gameboard-height);
+	margin:0;
+	padding: 0;
+	gap:0;
     background-color: #f0f0f0;
 }
 
 .river {
-    height: 5%;
+	height: var(--river-height);
     background-color: #4ab3b4;
 }
 
 .playground {
-    position: relative;
-    height: 90%; /* Reduced to fit the total structure */
+    position: relative; /* Added */
+	height: calc(100% - var(--river-height));
     margin: 0;
     padding: 0;
     border: none;
 }
 
 .hospital {
-    height: 5%; /* Hospital at the bottom */
-    background-color: white; /* Change color if needed for visibility */
-    border: dashed 2px coral; /* Dashed line at the bottom */
+    position: relative; /* Added */
+    height: var(--hospital-height);
     margin: 0;
     padding: 0;
+    border: 1px dashed red; /* Fixed: specify width, style, and color */
 }
 
 .creet {

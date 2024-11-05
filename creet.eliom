@@ -3,6 +3,7 @@ open Js_of_ocaml
 open Js_of_ocaml_lwt
 open Eliom_content.Html.D
 open Eliom_content.Html
+open Params
 
 type creet_condition = Healthy | Sick | Berserk | Mean
 
@@ -10,8 +11,6 @@ type creet_status = {
   mutable condition: creet_condition;
   mutable max_size: float;
 }
-
-let base_creet_size: float = 50.
 
 let _max_size_for_condition = function
   | Healthy -> 1.
@@ -70,7 +69,7 @@ let _move creet =
   creet.dom_elt##.style##.top := _get_px (int_of_float creet.coordinates.y)
 
 let _change_size creet =
-  let target_size = creet.status.max_size *. base_creet_size in
+  let target_size = creet.status.max_size *. creet_base_size in
   if creet.size <> target_size then
     let adjustment = (target_size -. creet.size) /. abs_float (target_size -. creet.size) in
     creet.size <- creet.size +. adjustment;
@@ -152,8 +151,8 @@ let create global_speed =
   let y = (max 85 (Random.int 630 - 50)) in
 
 
-  (* let x = (max 0 + int_of_float (base_creet_size /. 2.) (Random.int 1000 - (int_of_float (base_creet_size /. 2.)))) in
-  let y = (max 35 + (int_of_float (base_creet_size /. 2.)) (Random.int 630 - (int_of_float base_creet_size /. 2.))) in *)
+  (* let x = (max 0 + int_of_float (creet_base_size /. 2.) (Random.int 1000 - (int_of_float (creet_base_size /. 2.)))) in
+  let y = (max 35 + (int_of_float (creet_base_size /. 2.)) (Random.int 630 - (int_of_float creet_base_size /. 2.))) in *)
   let elt = div ~a:[
       a_class [ "creet" ];
       a_style ("position: absolute; left: " ^ string_of_int x ^ "px; top: " ^ string_of_int y ^ "px;")
@@ -168,12 +167,12 @@ let create global_speed =
     available = true;
     coordinates = {
       x = (float_of_int x);
-      x_min = 0.;
-      x_max = 1000.;
+      x_min = creet_base_size /. 2.;
+      x_max = (float_of_int gameboard_width);
       x_step;
       y = (float_of_int y);
-      y_min = 0.;
-      y_max = 630.;
+      y_min = creet_base_size /. 2.;
+      y_max = (float_of_int gameboard_height) -. (float_of_int hospital_height);
       y_step;
     };
     status = {condition = Healthy ; max_size = _max_size_for_condition Healthy};
@@ -190,12 +189,12 @@ let move creet =
   _change_direction creet;
   _move creet;
   (* Firebug.console##log (Js.string (Printf.sprintf "y: %d, y_min: %d" creet.coordinates.y creet.coordinates.y_min)); *)
-  if creet.coordinates.x <= creet.coordinates.x_min +. (creet.size /. 2.)
+  if creet.coordinates.x <= creet.coordinates.x_min
     || creet.coordinates.x >=  creet.coordinates.x_max -. (creet.size /. 2.) then (
     creet.coordinates.x_step <- Float.neg creet.coordinates.x_step;
     _move creet
   )
-  else if creet.coordinates.y <= creet.coordinates.y_min +. (creet.size /. 2.)
+  else if creet.coordinates.y <= creet.coordinates.y_min
     ||
     creet.coordinates.y >= creet.coordinates.y_max -. (creet.size /. 2.) then (
     if creet.coordinates.y -. (creet.size /. 2.) <= 0. && creet.status.condition = Healthy then _change_condition creet;

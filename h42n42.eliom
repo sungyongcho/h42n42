@@ -4,9 +4,10 @@ open Html.D
 ]
 
 [%%client
-
+open Params
 
 let main () =
+  set_css_variables;
   Random.self_init ();
   let playground = Playground.get () in
 
