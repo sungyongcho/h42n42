@@ -1,3 +1,61 @@
+:root {
+	/* CSS variables are set from the OCaml code */
+  }
+
 * {
     font-family: sans-serif;
+}
+body {
+    margin: unset;
+    -webkit-user-select: none;
+    user-select: none;
+}
+.gameboard {
+	width: var(--gameboard-width);
+	height: var(--gameboard-height);
+	margin:0;
+	padding: 0;
+	gap:0;
+    background-color: #f0f0f0;
+}
+
+.river {
+	height: var(--river-height);
+    background-color: #4ab3b4;
+}
+
+.playground {
+    position: relative; /* Added */
+	height: calc(100% - var(--river-height));
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+
+.hospital {
+    position: relative; /* Added */
+    height: var(--hospital-height);
+    margin: 0;
+    padding: 0;
+    border: 1px dashed red; /* Fixed: specify width, style, and color */
+}
+
+.creet {
+    height: 50px;
+    width: 50px;
+    /* background-color: #267ef5; */
+    border-radius: 50%;
+    display: block; /* Change from inline-block to block */
+    position: absolute;
+    margin: 0; /* Reset margin */
+    padding: 0; /* Reset padding */
+    border: 0; /* Reset border */
+    line-height: 0; /* Reset line-height */
+    font-size: 0; /* Reset font-size */
+    box-sizing: border-box; /* Ensure padding and border are included in width and height */
+	transform: translate(-50%, -50%); /* Centers the element */
+}
+
+.creets-counter {
+    padding: 15px;
 }
