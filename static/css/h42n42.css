@@ -81,8 +81,8 @@ body {
 
 
 .creet {
-    height: 50px;
-    width: 50px;
+    height: var(--creet-size);
+    width: var(--creet-size);
     /* background-color: #267ef5; */
     border-radius: 50%;
     display: block; /* Change from inline-block to block */
