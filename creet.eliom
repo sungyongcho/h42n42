@@ -133,14 +133,29 @@ let _change_condition creet =
     let container_top = container_rect##.top in
 
     let radius = creet.size /. 2. in
-    let left = float_of_int event##.clientX -. (Js.to_float container_left) -. (radius ) in
-    let top = float_of_int event##.clientY -. (Js.to_float container_top) -. (radius)in
+    let left = float_of_int event##.clientX -. (Js.to_float container_left) in
+    let top = float_of_int event##.clientY -. (Js.to_float container_top) -. (float_of_int river_height) in
 
-    creet.coordinates.x <- max creet.coordinates.x_min (min (creet.coordinates.x_max -. creet.size) left);
-    creet.coordinates.y <- max creet.coordinates.y_min (min (creet.coordinates.y_max -. creet.size) top);
+    (* Adjust X coordinate *)
+    if left < creet.coordinates.x_min then
+      creet.coordinates.x <- creet.coordinates.x_min
+    else if left > creet.coordinates.x_max -. radius then
+      creet.coordinates.x <- creet.coordinates.x_max -. radius
+    else
+      creet.coordinates.x <- left;
 
+    (* Adjust Y coordinate *)
+    if top < creet.coordinates.y_min then
+      creet.coordinates.y <- creet.coordinates.y_min
+    else if top > creet.coordinates.y_max -. radius then
+      creet.coordinates.y <- creet.coordinates.y_max -. radius
+    else
+      creet.coordinates.y <- top;
+
+    (* Update the DOM element's position *)
     creet.dom_elt##.style##.left := _get_px (int_of_float creet.coordinates.x);
     creet.dom_elt##.style##.top := _get_px (int_of_float creet.coordinates.y)
+
 
 let _handle_events creet mouse_down _ =
   creet.available <- false;
@@ -163,8 +178,6 @@ let check_healthy_creets creets =
 let create global_speed =
   let x = (max 50 (Random.int 1000 - 50)) in
   let y = (max 85 (Random.int 630 - 50)) in
-
-
   (* let x = (max 0 + int_of_float (creet_base_size /. 2.) (Random.int 1000 - (int_of_float (creet_base_size /. 2.)))) in
   let y = (max 35 + (int_of_float (creet_base_size /. 2.)) (Random.int 630 - (int_of_float creet_base_size /. 2.))) in *)
   let elt = div ~a:[
@@ -177,7 +190,7 @@ let create global_speed =
     dom_elt = To_dom.of_div elt;
     speed = 1.;
     global_speed;
-    size = 50.;
+    size = creet_base_size;
     available = true;
     coordinates = {
       x = (float_of_int x);
