@@ -216,20 +216,18 @@ let move creet =
   if creet.coordinates.x <= creet.coordinates.x_min
     || creet.coordinates.x >=  creet.coordinates.x_max -. (creet.size /. 2.) then (
     creet.coordinates.x_step <- Float.neg creet.coordinates.x_step;
-    (* _move creet *)
   )
   else if creet.coordinates.y <= creet.coordinates.y_min
     ||
     creet.coordinates.y >= creet.coordinates.y_max -. (creet.size /. 2.) then (
     if creet.coordinates.y -. (creet.size /. 2.) <= 0. && creet.status.condition = Healthy then _change_condition creet;
     creet.coordinates.y_step <- Float.neg creet.coordinates.y_step;
-    (* _move creet; *)
   )
-  else  _surprise_move creet;
+  else _surprise_move creet;
 
   (match creet.status.condition with
   | Berserk | Mean -> _change_size creet
   | _ -> () );
-  _move creet;
 
+  _move creet;
 ]
