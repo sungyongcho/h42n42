@@ -11,6 +11,7 @@ body {
     user-select: none;
 }
 .gameboard {
+	position: relative; /* Added to establish a positioning context */
 	width: var(--gameboard-width);
 	height: var(--gameboard-height);
 	margin:0;
@@ -18,18 +19,8 @@ body {
 	gap:0;
     background-color: #f0f0f0;
 }
-.start-button {
-	position: absolute;
-	top: 50%;
-	left: 50%;
-	transform: translate(-50%, -50%);
-	padding: 10px 20px;
-	font-size: 1.2em;
-	cursor: pointer;
-	/* Additional styling as needed */
-  }
-
 .river {
+	position: relative; /* Added */
 	height: var(--river-height);
     background-color: #4ab3b4;
 }
@@ -41,7 +32,6 @@ body {
     padding: 0;
     border: none;
 }
-
 .hospital {
     position: relative; /* Added */
     height: var(--hospital-height);
@@ -49,6 +39,28 @@ body {
     padding: 0;
     border: 1px dashed red; /* Fixed: specify width, style, and color */
 }
+.start-button {
+    position: absolute; /* Changed from relative to absolute */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Centers the button */
+    padding: 10px 20px;
+    font-size: 1.2em;
+    cursor: pointer;
+    /* Additional styling as needed */
+    /* Example: background-color, border, border-radius, etc. */
+    background-color: #4CAF50; /* Green background */
+    color: white; /* White text */
+    border: none; /* Remove borders */
+    border-radius: 5px; /* Rounded corners */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    transition: background-color 0.3s ease; /* Smooth hover effect */
+}
+
+.start-button:hover {
+    background-color: #45a049; /* Darker green on hover */
+}
+
 
 .creet {
     height: 50px;
