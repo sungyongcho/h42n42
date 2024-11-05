@@ -5,14 +5,40 @@ open Html.D
 
 [%%client
 open Params
+open Js_of_ocaml
+open Dom_html
+
+(* Helper function to get element by ID with option type *)
+let getElementById_opt id =
+  Js.Opt.to_option (document##getElementById (Js.string id))
+
 
 let main () =
   set_css_variables;
   Random.self_init ();
   let playground = Playground.get () in
-  Lwt.async (fun () -> Playground.play playground);
-  Lwt.return ()]
 
+  (* Access the Start button by its ID *)
+  match getElementById_opt "start-button" with
+  | Some btn ->
+      (* Add a click event listener to the Start button *)
+      btn##.onclick := Dom_html.handler (fun _ ->
+        (* Remove the Start button from the DOM *)
+        btn##.style##.display := Js.string "none";
+
+        (* Start the game asynchronously *)
+        Lwt.async (fun () -> Playground.play playground);
+
+        (* Prevent default behavior and stop propagation *)
+        Js._false
+      );
+      Lwt.return ()  (* Return unit *)
+  | None ->
+      (* If the Start button is not found, start the game automatically *)
+      Lwt.async (fun () -> Playground.play playground);
+      Lwt.return ()  (* Return unit *)
+
+]
 
 let%server application_name = "h42n42"
 let%client application_name = Eliom_client.get_application_name ()
@@ -42,6 +68,13 @@ let%shared page () =
       (* Hospital is a dashed line at the bottom *)
     ];
     Playground.creets_counter_div;
+    button
+    ~a:[
+      a_class [ "start-button" ];
+      a_id "start-button"
+    ]
+    [ txt "Start" ];
+
   ]
 
 
