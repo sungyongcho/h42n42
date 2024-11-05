@@ -77,30 +77,24 @@ let _change_size creet =
   creet.dom_elt##.style##.height := _get_px (int_of_float creet.size);
   creet.dom_elt##.style##.width := _get_px (int_of_float creet.size)
 
-let _change_direction creet =
-  if creet.status.condition = Mean then
-    creet.counter <- 0
-  else if creet.counter >= creet.max_counter ||
-          creet.coordinates.x <= creet.coordinates.x_min ||
-          creet.coordinates.x +. creet.size >= creet.coordinates.x_max ||
-          creet.coordinates.y <= creet.coordinates.y_min ||
-          creet.coordinates.y +. creet.size >= creet.coordinates.y_max then (
-    creet.counter <- 0;
-    let x_step, y_step = _get_random_steps () in
-    creet.coordinates.x_step <- x_step;
-    creet.coordinates.y_step <- y_step;
-
-    (* Ensure the new steps do not push the creet out of bounds *)
-    if creet.coordinates.x +. (creet.size /. 2.) +. (x_step *. creet.speed *. !(creet.global_speed)) >= creet.coordinates.x_max ||
-        creet.coordinates.x -. (creet.size /. 2.) +. (x_step *. creet.speed *. !(creet.global_speed)) <= creet.coordinates.x_min then
-      creet.coordinates.x_step <- Float.neg creet.coordinates.x_step;
-
-    if creet.coordinates.y +. (creet.size /. 2.) +. (y_step *. creet.speed *. !(creet.global_speed)) >= creet.coordinates.y_max ||
-        creet.coordinates.y -. (creet.size /. 2.) +. (y_step *. creet.speed *. !(creet.global_speed)) <= creet.coordinates.y_min then
-      creet.coordinates.y_step <- Float.neg creet.coordinates.y_step;
-  )
-  else
-    creet.counter <- creet.counter + 1
+  let _change_direction creet =
+    if creet.status.condition = Mean then
+      creet.counter <- 0
+    else if creet.counter >= creet.max_counter then (
+      creet.counter <- 0;
+      let x_step, y_step = _get_random_steps () in
+      creet.coordinates.x_step <- x_step;
+      creet.coordinates.y_step <- y_step;
+      (* Ensure the new steps do not push the creet out of bounds *)
+      if creet.coordinates.x +. creet.size +. (x_step *. creet.speed *. !(creet.global_speed)) >= creet.coordinates.x_max ||
+          creet.coordinates.x -. creet.size +. (x_step *. creet.speed *. !(creet.global_speed)) <= creet.coordinates.x_min then
+        creet.coordinates.x_step <- Float.neg creet.coordinates.x_step;
+      if creet.coordinates.y +. creet.size +. (y_step *. creet.speed *. !(creet.global_speed)) >= creet.coordinates.y_max ||
+          creet.coordinates.y -. creet.size  +. (y_step *. creet.speed *. !(creet.global_speed)) <= creet.coordinates.y_min then
+        creet.coordinates.y_step <- Float.neg creet.coordinates.y_step;
+    )
+    else
+      creet.counter <- creet.counter + 1
 
 let _change_condition creet =
   (* let n = Random.int 100 in *)
@@ -126,8 +120,8 @@ let _change_condition creet =
     let container_top = container_rect##.top in
 
     let radius = creet.size /. 2. in
-    let left = float_of_int event##.clientX -. (Js.to_float container_left) -. radius in
-    let top = float_of_int event##.clientY -. (Js.to_float container_top) -. radius in
+    let left = float_of_int event##.clientX -. (Js.to_float container_left) -. (radius ) in
+    let top = float_of_int event##.clientY -. (Js.to_float container_top) -. (radius)in
 
     creet.coordinates.x <- max creet.coordinates.x_min (min (creet.coordinates.x_max -. creet.size) left);
     creet.coordinates.y <- max creet.coordinates.y_min (min (creet.coordinates.y_max -. creet.size) top);
@@ -154,8 +148,12 @@ let check_healthy_creets creets =
 
 
 let create global_speed =
-  let x = (max 10 (Random.int 1000 - 50)) in
-  let y = (max 50 (Random.int 650 - 50)) in
+  let x = (max 50 (Random.int 1000 - 50)) in
+  let y = (max 85 (Random.int 630 - 50)) in
+
+
+  (* let x = (max 0 + int_of_float (base_creet_size /. 2.) (Random.int 1000 - (int_of_float (base_creet_size /. 2.)))) in
+  let y = (max 35 + (int_of_float (base_creet_size /. 2.)) (Random.int 630 - (int_of_float base_creet_size /. 2.))) in *)
   let elt = div ~a:[
       a_class [ "creet" ];
       a_style ("position: absolute; left: " ^ string_of_int x ^ "px; top: " ^ string_of_int y ^ "px;")
@@ -174,8 +172,8 @@ let create global_speed =
       x_max = 1000.;
       x_step;
       y = (float_of_int y);
-      y_min = -15.;
-      y_max = 651.;
+      y_min = 0.;
+      y_max = 630.;
       y_step;
     };
     status = {condition = Healthy ; max_size = _max_size_for_condition Healthy};
@@ -188,16 +186,19 @@ let create global_speed =
 
 
 let move creet =
+
+  _change_direction creet;
+  _move creet;
   (* Firebug.console##log (Js.string (Printf.sprintf "y: %d, y_min: %d" creet.coordinates.y creet.coordinates.y_min)); *)
-  if creet.coordinates.x <= creet.coordinates.x_min
-    || creet.coordinates.x >=  creet.coordinates.x_max -. creet.size then (
+  if creet.coordinates.x <= creet.coordinates.x_min +. (creet.size /. 2.)
+    || creet.coordinates.x >=  creet.coordinates.x_max -. (creet.size /. 2.) then (
     creet.coordinates.x_step <- Float.neg creet.coordinates.x_step;
     _move creet
   )
-  else if creet.coordinates.y <= creet.coordinates.y_min
+  else if creet.coordinates.y <= creet.coordinates.y_min +. (creet.size /. 2.)
     ||
-    creet.coordinates.y >= creet.coordinates.y_max -. creet.size then (
-    if creet.coordinates.y <= 0. && creet.status.condition = Healthy then _change_condition creet;
+    creet.coordinates.y >= creet.coordinates.y_max -. (creet.size /. 2.) then (
+    if creet.coordinates.y -. (creet.size /. 2.) <= 0. && creet.status.condition = Healthy then _change_condition creet;
     creet.coordinates.y_step <- Float.neg creet.coordinates.y_step;
     _move creet;
   );
@@ -206,6 +207,4 @@ let move creet =
   | Berserk | Mean -> _change_size creet
   | _ -> () );
 
-  _change_direction creet;
-  _move creet
 ]
