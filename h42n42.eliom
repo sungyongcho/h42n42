@@ -10,9 +10,7 @@ let main () =
   set_css_variables;
   Random.self_init ();
   let playground = Playground.get () in
-
   Lwt.async (fun () -> Playground.play playground);
-
   Lwt.return ()]
 
 

@@ -68,26 +68,26 @@ let _move creet =
   creet.dom_elt##.style##.left := _get_px (int_of_float creet.coordinates.x);
   creet.dom_elt##.style##.top := _get_px (int_of_float creet.coordinates.y)
 
-  let _change_size creet =
-    let target_size = creet.status.max_size *. creet_base_size in
-    if creet.size <> target_size then (
-      (* Update the size *)
-      creet.size <- creet.size +. 1.;
+let _change_size creet =
+  let target_size = creet.status.max_size *. creet_base_size in
+  if creet.size <> target_size then (
+    (* Update the size *)
+    creet.size <- creet.size +. 1.;
 
-      (* Update minimum coordinates to center based on the new size *)
-      creet.coordinates.x_min <- creet.size /. 2.;
-      creet.coordinates.y_min <- creet.size /. 2.;
+    (* Update minimum coordinates to center based on the new size *)
+    creet.coordinates.x_min <- creet.size /. 2.;
+    creet.coordinates.y_min <- creet.size /. 2.;
 
-      (* Center `x` and `y` based on new `x_min` and `y_min` *)
-      creet.coordinates.x <- max creet.coordinates.x_min (min (creet.coordinates.x_max -. creet.size) (creet.coordinates.x));
-      creet.coordinates.y <- max creet.coordinates.y_min (min (creet.coordinates.y_max -. creet.size) (creet.coordinates.y))
-    );
+    (* Center `x` and `y` based on new `x_min` and `y_min` *)
+    creet.coordinates.x <- max creet.coordinates.x_min (min (creet.coordinates.x_max -. creet.size) (creet.coordinates.x));
+    creet.coordinates.y <- max creet.coordinates.y_min (min (creet.coordinates.y_max -. creet.size) (creet.coordinates.y))
+  );
 
-    (* Apply the updated size to height, width, top, and left *)
-    creet.dom_elt##.style##.height := _get_px (int_of_float creet.size);
-    creet.dom_elt##.style##.width := _get_px (int_of_float creet.size);
-    creet.dom_elt##.style##.top := _get_px (int_of_float creet.coordinates.y);
-    creet.dom_elt##.style##.left := _get_px (int_of_float creet.coordinates.x)
+  (* Apply the updated size to height, width, top, and left *)
+  creet.dom_elt##.style##.height := _get_px (int_of_float creet.size);
+  creet.dom_elt##.style##.width := _get_px (int_of_float creet.size);
+  creet.dom_elt##.style##.top := _get_px (int_of_float creet.coordinates.y);
+  creet.dom_elt##.style##.left := _get_px (int_of_float creet.coordinates.x)
 
 (* TODO: surprise direction *)
 let _surprise_move creet =
@@ -124,35 +124,50 @@ let _change_condition creet =
   Firebug.console##log (Js.string ("Setting background color to: " ^
   (Js.to_string (get_bg_color creet.status.condition))));;
 
-  let _event_handler creet event =
-    let container = Dom_html.document##.body in
-    let container_rect = container##getBoundingClientRect in
-    let container_left = container_rect##.left in
-    let container_top = container_rect##.top in
+let _heal_creet creet =
+  creet.status.condition <- Healthy;
+  creet.status.max_size <- _max_size_for_condition Healthy;
+  creet.size <- creet_base_size;
+  creet.coordinates.x_min <- creet_base_size /. 2.;
+  creet.coordinates.x_max <- (float_of_int gameboard_width);
+  creet.coordinates.y_min <- creet_base_size /. 2.;
+  creet.coordinates.y_max <- (float_of_int gameboard_height) -. (float_of_int hospital_height);
 
-    let radius = creet.size /. 2. in
-    let left = float_of_int event##.clientX -. (Js.to_float container_left) in
-    let top = float_of_int event##.clientY -. (Js.to_float container_top) -. (float_of_int river_height) in
+  creet.dom_elt##.style##.height := _get_px (int_of_float creet.size);
+  creet.dom_elt##.style##.width := _get_px (int_of_float creet.size);
+  creet.dom_elt##.style##.backgroundColor := get_bg_color creet.status.condition
 
-    (* Adjust X coordinate *)
-    if left < creet.coordinates.x_min then
-      creet.coordinates.x <- creet.coordinates.x_min
-    else if left > creet.coordinates.x_max -. radius then
-      creet.coordinates.x <- creet.coordinates.x_max -. radius
-    else
-      creet.coordinates.x <- left;
+let _event_handler creet event =
+  let container = Dom_html.document##.body in
+  let container_rect = container##getBoundingClientRect in
+  let container_left = container_rect##.left in
+  let container_top = container_rect##.top in
 
-    (* Adjust Y coordinate *)
-    if top < creet.coordinates.y_min then
-      creet.coordinates.y <- creet.coordinates.y_min
-    else if top > creet.coordinates.y_max -. radius then
-      creet.coordinates.y <- creet.coordinates.y_max -. radius
-    else
-      creet.coordinates.y <- top;
+  let radius = creet.size /. 2. in
+  let left = float_of_int event##.clientX -. (Js.to_float container_left) in
+  let top = float_of_int event##.clientY -. (Js.to_float container_top) -. (float_of_int river_height) in
 
-    (* Update the DOM element's position *)
-    creet.dom_elt##.style##.left := _get_px (int_of_float creet.coordinates.x);
-    creet.dom_elt##.style##.top := _get_px (int_of_float creet.coordinates.y)
+  (* Adjust X coordinate *)
+  if left < creet.coordinates.x_min then
+    creet.coordinates.x <- creet.coordinates.x_min
+  else if left > creet.coordinates.x_max -. radius then
+    creet.coordinates.x <- creet.coordinates.x_max -. radius
+  else
+    creet.coordinates.x <- left;
+
+  (* Adjust Y coordinate *)
+  if top < creet.coordinates.y_min then
+    creet.coordinates.y <- creet.coordinates.y_min
+  else if top > creet.coordinates.y_max then(
+    if creet.status.condition != Healthy then _heal_creet creet;
+    creet.coordinates.y <- creet.coordinates.y_max -. radius
+  )
+  else
+    creet.coordinates.y <- top;
+
+  (* Update the DOM element's position *)
+  creet.dom_elt##.style##.left := _get_px (int_of_float creet.coordinates.x);
+  creet.dom_elt##.style##.top := _get_px (int_of_float creet.coordinates.y)
 
 
 let _handle_events creet mouse_down _ =
