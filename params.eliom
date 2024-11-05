@@ -9,6 +9,12 @@ let hospital_height = 50
 
 type theme = Default | BlackAndWhite | Transparent
 
+type theme_property = {
+  bg_color: string;
+  river_color: string;
+  hospital_color: string
+}
+
 let theme_to_string = function
   | Default -> "default"
   | BlackAndWhite -> "black-and-white"

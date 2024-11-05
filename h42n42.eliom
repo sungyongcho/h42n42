@@ -23,12 +23,26 @@ let update_theme_display () =
     (
       let theme_name = theme_to_string themes.(!current_theme_index) in
       theme_display##.innerHTML := Js.string theme_name;
-      let bg_color = match themes.(!current_theme_index) with
-      | Default -> "white"
-      | BlackAndWhite -> "black"
-      | Transparent -> "transparent"
+      let theme = match themes.(!current_theme_index) with
+      | Default -> {
+        bg_color = "#f0f0f0";
+        river_color = "#4ab3b4";
+        hospital_color = "white"
+      }
+      | BlackAndWhite -> {
+        bg_color = "black";
+        river_color = "white";
+        hospital_color = "red"
+      }
+      | Transparent -> {
+        bg_color = "gray";
+        river_color = "yellow";
+        hospital_color = "purple"
+      }
       in
-      set_css_variable_by_class "playground" "background-color" bg_color
+      set_css_variable_by_class "playground" "background-color" theme.bg_color;
+      set_css_variable_by_class "river" "background-color" theme.river_color;
+      set_css_variable_by_class "hospital" "background-color" theme.hospital_color
     )
   | None -> ()
 
