@@ -131,7 +131,7 @@ let _heal_creet creet =
   creet.coordinates.x_min <- creet_base_size /. 2.;
   creet.coordinates.x_max <- (float_of_int gameboard_width);
   creet.coordinates.y_min <- creet_base_size /. 2.;
-  creet.coordinates.y_max <- (float_of_int gameboard_height) -. (float_of_int hospital_height);
+  creet.coordinates.y_max <- (float_of_int gameboard_height) -. (float_of_int hospital_height) -. (float_of_int river_height);
 
   creet.dom_elt##.style##.height := _get_px (int_of_float creet.size);
   creet.dom_elt##.style##.width := _get_px (int_of_float creet.size);
@@ -159,8 +159,8 @@ let _event_handler creet event =
   if top < creet.coordinates.y_min then
     creet.coordinates.y <- creet.coordinates.y_min
   else if top > creet.coordinates.y_max then(
-    if creet.status.condition != Healthy then _heal_creet creet;
-    creet.coordinates.y <- creet.coordinates.y_max -. radius
+    creet.coordinates.y <- creet.coordinates.y_max -. radius;
+    if creet.status.condition != Healthy then _heal_creet creet
   )
   else
     creet.coordinates.y <- top;
@@ -212,7 +212,7 @@ let create global_speed =
       x_step;
       y = (float_of_int y);
       y_min = creet_base_size /. 2.;
-      y_max = (float_of_int gameboard_height) -. (float_of_int hospital_height);
+      y_max = (float_of_int gameboard_height) -. (float_of_int hospital_height) -. (float_of_int river_height);
       y_step;
     };
     status = {condition = Healthy ; max_size = _max_size_for_condition Healthy};

@@ -27,7 +27,7 @@ body {
 
 .playground {
     position: relative; /* Added */
-	height: calc(100% - var(--river-height));
+	height: calc(100% - var(--river-height) - var(--hospital-height));
     margin: 0;
     padding: 0;
     border: none;
@@ -38,6 +38,8 @@ body {
     margin: 0;
     padding: 0;
     border: 1px dashed red; /* Fixed: specify width, style, and color */
+	background-color: white;
+	z-index: 1;
 }
 .start-button {
     position: absolute; /* Changed from relative to absolute */
@@ -76,6 +78,7 @@ body {
     font-size: 0; /* Reset font-size */
     box-sizing: border-box; /* Ensure padding and border are included in width and height */
 	transform: translate(-50%, -50%); /* Centers the element */
+	z-index: 2; /* Higher z-index */
 }
 
 .creets-counter {

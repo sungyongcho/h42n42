@@ -64,7 +64,7 @@ let%shared page () =
     div ~a:[ a_class [ "gameboard" ] ] [
       div ~a:[ a_class [ "river" ] ] [];
       Playground.elt;
-      div ~a:[ a_class [ "hospital" ] ] []; (* Hospital div added *)
+      div ~a:[ a_class [ "hospital" ] ] [ txt "hospital"]; (* Hospital div added *)
       button ~a:[ a_class [ "start-button" ]; a_id "start-button"] [ txt "Start" ];
       (* Hospital is a dashed line at the bottom *)
     ];
