@@ -41,22 +41,38 @@ body {
 	background-color: white;
 	z-index: 1;
 }
-.start-button {
-    position: absolute; /* Changed from relative to absolute */
+.button-container {
+    position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%); /* Centers the button */
+    transform: translate(-50%, -50%); /* Centers the container */
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centers children horizontally */
+    gap: 10px; /* Space between start-button and theme-selector */
+}
+
+.start-button {
+    /* Remove absolute positioning */
+    position: relative; /* or omit if not necessary */
     padding: 10px 20px;
     font-size: 1.2em;
     cursor: pointer;
-    /* Additional styling as needed */
-    /* Example: background-color, border, border-radius, etc. */
     background-color: #4CAF50; /* Green background */
     color: white; /* White text */
     border: none; /* Remove borders */
     border-radius: 5px; /* Rounded corners */
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
     transition: background-color 0.3s ease; /* Smooth hover effect */
+}
+.start-button:hover {
+    background-color: #45a049; /* Darker green on hover */
+}
+
+.theme-selector {
+    display: flex;
+    align-items: center;
+    gap: 5px; /* Space between buttons and display */
 }
 
 .start-button:hover {

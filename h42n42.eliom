@@ -12,11 +12,56 @@ open Dom_html
 let getElementById_opt id =
   Js.Opt.to_option (document##getElementById (Js.string id))
 
+(* * Define the themes and initial theme state *)
+let themes = [| Default; BlackAndWhite; Transparent |]
+let current_theme_index = ref 0
+
+(* Function to update the theme text display *)
+let update_theme_display () =
+  match getElementById_opt "theme-display" with
+  | Some theme_display ->
+    (
+      let theme_name = theme_to_string themes.(!current_theme_index) in
+      theme_display##.innerHTML := Js.string theme_name;
+      let bg_color = match themes.(!current_theme_index) with
+      | Default -> "white"
+      | BlackAndWhite -> "black"
+      | Transparent -> "transparent"
+      in
+      set_css_variable_by_class "playground" "background-color" bg_color
+    )
+  | None -> ()
+
+(* Function to handle left and right button clicks for changing theme *)
+let handle_theme_change direction =
+  current_theme_index := (!current_theme_index + direction + Array.length themes) mod Array.length themes;
+  update_theme_display ()
 
 let main () =
   set_css_variables;
   Random.self_init ();
   let playground = Playground.get () in
+
+  update_theme_display ();
+  (* Attach event listeners to the theme selector buttons *)
+  begin
+    match getElementById_opt "theme-left" with
+    | Some left_button ->
+        left_button##.onclick := Dom_html.handler (fun _ ->
+          handle_theme_change (-1);
+          Js._false
+        )
+    | None -> ()
+  end;
+  begin
+    match getElementById_opt "theme-right" with
+    | Some right_button ->
+        right_button##.onclick := Dom_html.handler (fun _ ->
+          handle_theme_change 1;
+          Js._false
+        )
+    | None -> ()
+  end;
 
   (* Access the Start button by its ID *)
   match getElementById_opt "start-button" with
@@ -64,12 +109,19 @@ let%shared page () =
     div ~a:[ a_class [ "gameboard" ] ] [
       div ~a:[ a_class [ "river" ] ] [];
       Playground.elt;
-      div ~a:[ a_class [ "hospital" ] ] [ txt "hospital"]; (* Hospital div added *)
-      button ~a:[ a_class [ "start-button" ]; a_id "start-button"] [ txt "Start" ];
-      (* Hospital is a dashed line at the bottom *)
+      div ~a:[ a_class [ "hospital" ] ] [ txt "hospital" ]; (* Hospital div added *)
+
+      (* Container for start button and theme selector *)
+      div ~a:[ a_class [ "button-container" ] ] [
+        button ~a:[ a_class [ "start-button" ]; a_id "start-button" ] [ txt "Start" ];
+        div ~a:[ a_class [ "theme-selector" ] ] [
+          button ~a:[ a_id "theme-left" ] [ txt "<" ];
+          span ~a:[ a_id "theme-display" ] [ txt "default" ];  (* Initial theme display *)
+          button ~a:[ a_id "theme-right" ] [ txt ">" ]
+        ];
+      ];
     ];
     Playground.creets_counter_div;
-
   ]
 
 
