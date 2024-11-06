@@ -63,7 +63,7 @@ let _is_game_over (playground : playground) =
 
 let _increment_global_speed gs = gs := !gs +. 0.0001
 
-let show_game_over playground =
+let show_game_over () =
   match getElementById_opt "game-over-container" with
   | Some container -> container##.style##.display := Js.string "block"
   | None -> ()
@@ -124,7 +124,7 @@ let rec _play playground =
   )
   else (
     playground.game_on <- false;
-    show_game_over playground;  (* Display the Game Over screen *)
+    show_game_over ();  (* Display the Game Over screen *)
     Lwt.return ()
   )
 let restart_game playground =

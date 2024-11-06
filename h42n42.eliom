@@ -97,6 +97,17 @@ let%shared page () =
       ];
     ];
     Playground.creets_counter_div;
+    div ~a:[ a_class [ "speed-slider-container" ] ] [
+      label ~a:[ a_label_for "speed-slider" ] [ txt "Global Speed: " ];
+      input ~a:[
+        a_input_type `Range;
+        a_id "speed-slider";
+        a_value ("1.0");             (* a_value remains as a string *)
+        a_input_min (`Number 1);               (* Use the `Number variant *)
+        a_input_max (`Number 5);               (* Use the `Number variant *)
+      ] ();
+      span ~a:[ a_id "speed-value" ] [ txt "1.0" ]  (* Initial value displayed *)
+    ]
   ]
 
 
