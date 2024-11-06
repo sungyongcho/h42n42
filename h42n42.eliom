@@ -6,7 +6,16 @@ open Html.D
 [%%client
 open Params
 open Layout
-open Dom_html
+open Js_of_ocaml
+
+let attach_id_action button_id action =
+  match getElementById_opt button_id with
+  | Some button ->
+      button##.onclick := Dom_html.handler (fun _ ->
+        action ();  (* Call the passed function *)
+        Js._false
+      )
+  | None -> ()
 
 let main () =
   set_css_variables;
@@ -15,44 +24,17 @@ let main () =
 
   update_theme_display ();
   (* Attach event listeners to the theme selector buttons *)
-  begin
-    match getElementById_opt "theme-left" with
-    | Some left_button ->
-        left_button##.onclick := Dom_html.handler (fun _ ->
-          handle_theme_change (-1);
-          Js._false
-        )
+  attach_id_action "theme-left" (fun () -> handle_theme_change (-1));
+  attach_id_action "theme-right" (fun () -> handle_theme_change 1);
+  attach_id_action "start-button" (fun () ->
+    (* Hide the Start button *)
+    (* Start the game asynchronously *)
+    Lwt.async (fun () -> Playground.play playground);
+    match getElementById_opt "button-container" with
+    | Some btn -> btn##.style##.display := Js.string "none"
     | None -> ()
-  end;
-  begin
-    match getElementById_opt "theme-right" with
-    | Some right_button ->
-        right_button##.onclick := Dom_html.handler (fun _ ->
-          handle_theme_change 1;
-          Js._false
-        )
-    | None -> ()
-  end;
-
-  (* Access the Start button by its ID *)
-  match getElementById_opt "start-button" with
-  | Some btn ->
-      (* Add a click event listener to the Start button *)
-      btn##.onclick := Dom_html.handler (fun _ ->
-        (* Remove the Start button from the DOM *)
-        btn##.style##.display := Js.string "none";
-
-        (* Start the game asynchronously *)
-        Lwt.async (fun () -> Playground.play playground);
-
-        (* Prevent default behavior and stop propagation *)
-        Js._false
-      );
-      Lwt.return ()  (* Return unit *)
-  | None ->
-      (* If the Start button is not found, start the game automatically *)
-      Lwt.async (fun () -> Playground.play playground);
-      Lwt.return ()  (* Return unit *)
+    );
+  Lwt.return ()
 ]
 
 let%server application_name = "h42n42"
@@ -82,7 +64,7 @@ let%shared page () =
       div ~a:[ a_class [ "hospital" ] ] [ txt "hospital" ]; (* Hospital div added *)
 
       (* Container for start button and theme selector *)
-      div ~a:[ a_class [ "button-container" ] ] [
+      div ~a:[ a_class [ "button-container" ]; a_id "button-container" ] [
         button ~a:[ a_class [ "start-button" ]; a_id "start-button" ] [ txt "Start" ];
         div ~a:[ a_class [ "theme-selector" ] ] [
           button ~a:[ a_id "theme-left" ] [ txt "<" ];
