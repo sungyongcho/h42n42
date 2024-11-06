@@ -1,6 +1,14 @@
 [%%shared
 open Eliom_content
 open Html.D
+let speed_value = input ~a:[
+  a_input_type `Range;
+  a_id "speed-slider";
+  a_value ("1.0");             (* a_value remains as a string *)
+  a_input_min (`Number 1);               (* Use the `Number variant *)
+  a_input_max (`Number 5);               (* Use the `Number variant *)
+] ()
+let speed_display = span ~a:[ a_id "speed-value" ] [ txt "1.0" ]  (* Initial value displayed *)
 ]
 
 [%%client
@@ -44,6 +52,19 @@ let attach_id_action button_id action =
 
     attach_id_action "back-to-start-button" (fun () ->
       Playground.back_to_start playground
+    );
+
+    let s_base_speed = Eliom_content.Html.To_dom.of_input ~%speed_value in
+
+    (* Event listener for updating the `base_speed` dynamically *)
+    s_base_speed##.oninput := Dom_html.handler (fun _ ->
+      let base_speed_value = Js.to_string s_base_speed##.value |> float_of_string in
+      let span_speed_value = Eliom_content.Html.To_dom.of_span ~%speed_display in
+      (* Perform actions with updated base_speed_value *)
+      playground.global_speed := base_speed_value;
+      span_speed_value##.textContent := (Js.some (Js.string (Printf.sprintf "%.1f" base_speed_value)));
+      Js_of_ocaml.Firebug.console##log (Js.string (Printf.sprintf "Base speed: %.2f" base_speed_value));
+      Js._false
     );
 
     Lwt.return ()
@@ -99,14 +120,8 @@ let%shared page () =
     Playground.creets_counter_div;
     div ~a:[ a_class [ "speed-slider-container" ] ] [
       label ~a:[ a_label_for "speed-slider" ] [ txt "Global Speed: " ];
-      input ~a:[
-        a_input_type `Range;
-        a_id "speed-slider";
-        a_value ("1.0");             (* a_value remains as a string *)
-        a_input_min (`Number 1);               (* Use the `Number variant *)
-        a_input_max (`Number 5);               (* Use the `Number variant *)
-      ] ();
-      span ~a:[ a_id "speed-value" ] [ txt "1.0" ]  (* Initial value displayed *)
+      speed_value;
+      speed_display;
     ]
   ]
 
