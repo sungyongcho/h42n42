@@ -92,7 +92,6 @@ let%shared page () =
         a_id "game-over-container";
         a_style "display: none; text-align: center; margin-top: 20px;"
       ] [
-        h2 [ txt "Game Over!" ];
         button ~a:[ a_id "restart-button"; a_class ["restart-button"] ] [ txt "Restart" ];
         button ~a:[ a_id "back-to-start-button"; a_class ["back-to-start-button"] ] [ txt "Back to Start" ];
       ];

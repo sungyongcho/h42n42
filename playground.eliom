@@ -63,7 +63,7 @@ let _is_game_over (playground : playground) =
 
 let _increment_global_speed gs = gs := !gs +. 0.0001
 
-let show_game_over () =
+let show_game_over playground =
   match getElementById_opt "game-over-container" with
   | Some container -> container##.style##.display := Js.string "block"
   | None -> ()
@@ -82,10 +82,6 @@ let clear_creets playground =
   playground.creets <- [];
   _update_dom_creets_counter playground
 
-(* Function to restart the game *)
-
-
-(* Function to go back to the start screen *)
 let back_to_start playground =
   clear_creets playground;
   playground.global_speed := 1.0;
@@ -128,8 +124,7 @@ let rec _play playground =
   )
   else (
     playground.game_on <- false;
-    Eliom_lib.alert "GAME OVER";
-    show_game_over ();  (* Display the Game Over screen *)
+    show_game_over playground;  (* Display the Game Over screen *)
     Lwt.return ()
   )
 let restart_game playground =

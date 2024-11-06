@@ -75,11 +75,40 @@ body {
     align-items: center;
     gap: 5px; /* Space between buttons and display */
 }
-
-.start-button:hover {
-    background-color: #45a049; /* Darker green on hover */
+.game-over-container {
+	position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Centers the container */
+	display: none;
+	text-align: center;
+	z-index: 3; /* Higher z-index */
+}
+.game-over-container #restart-button {
+	position: relative; /* or omit if not necessary */
+    padding: 10px 20px;
+    font-size: 1.2em;
+    cursor: pointer;
+    background-color: blue; /* Green background */
+    color: white; /* White text */
+    border: none; /* Remove borders */
+    border-radius: 5px; /* Rounded corners */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    transition: background-color 0.3s ease; /* Smooth hover effect */
 }
 
+.game-over-container #back-to-start-button {
+	position: relative; /* or omit if not necessary */
+    padding: 10px 20px;
+    font-size: 1.2em;
+    cursor: pointer;
+    background-color: green; /* Green background */
+    color: white; /* White text */
+    border: none; /* Remove borders */
+    border-radius: 5px; /* Rounded corners */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    transition: background-color 0.3s ease; /* Smooth hover effect */
+}
 
 .creet {
     height: var(--creet-size);
