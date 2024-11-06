@@ -17,24 +17,37 @@ let attach_id_action button_id action =
       )
   | None -> ()
 
-let main () =
-  set_css_variables;
-  Random.self_init ();
-  let playground = Playground.get () in
+  let main () =
+    set_css_variables;
+    Random.self_init ();
+    let playground = Playground.get () in
 
-  update_theme_display ();
-  (* Attach event listeners to the theme selector buttons *)
-  attach_id_action "theme-left" (fun () -> handle_theme_change (-1));
-  attach_id_action "theme-right" (fun () -> handle_theme_change 1);
-  attach_id_action "start-button" (fun () ->
-    (* Hide the Start button *)
-    (* Start the game asynchronously *)
-    Lwt.async (fun () -> Playground.play playground);
-    match getElementById_opt "button-container" with
-    | Some btn -> btn##.style##.display := Js.string "none"
-    | None -> ()
+    update_theme_display ();
+    (* Attach event listeners to the theme selector buttons *)
+    attach_id_action "theme-left" (fun () -> handle_theme_change (-1));
+    attach_id_action "theme-right" (fun () -> handle_theme_change 1);
+
+    (* Attach event listener to the Start button *)
+    attach_id_action "start-button" (fun () ->
+      (* Hide the Start button and theme selector *)
+      (match getElementById_opt "button-container" with
+       | Some btn -> btn##.style##.display := Js.string "none"
+       | None -> ());
+      (* Start the game asynchronously *)
+      Lwt.async (fun () -> Playground.play playground);
     );
-  Lwt.return ()
+
+    (* Attach event listeners to Restart and Back to Start buttons *)
+    attach_id_action "restart-button" (fun () ->
+      Playground.restart_game playground
+    );
+
+    attach_id_action "back-to-start-button" (fun () ->
+      Playground.back_to_start playground
+    );
+
+    Lwt.return ()
+
 ]
 
 let%server application_name = "h42n42"
@@ -61,20 +74,32 @@ let%shared page () =
     div ~a:[ a_class [ "gameboard" ] ] [
       div ~a:[ a_class [ "river" ] ] [];
       Playground.elt;
-      div ~a:[ a_class [ "hospital" ] ] [ txt "hospital" ]; (* Hospital div added *)
+      div ~a:[ a_class [ "hospital" ] ] [ txt "hospital" ];
 
       (* Container for start button and theme selector *)
       div ~a:[ a_class [ "button-container" ]; a_id "button-container" ] [
         button ~a:[ a_class [ "start-button" ]; a_id "start-button" ] [ txt "Start" ];
         div ~a:[ a_class [ "theme-selector" ] ] [
           button ~a:[ a_id "theme-left" ] [ txt "<" ];
-          span ~a:[ a_id "theme-display" ] [ txt "default" ];  (* Initial theme display *)
+          span ~a:[ a_id "theme-display" ] [ txt "default" ];
           button ~a:[ a_id "theme-right" ] [ txt ">" ]
         ];
+      ];
+
+      (* Game Over Container: Initially Hidden *)
+      div ~a:[
+        a_class [ "game-over-container" ];
+        a_id "game-over-container";
+        a_style "display: none; text-align: center; margin-top: 20px;"
+      ] [
+        h2 [ txt "Game Over!" ];
+        button ~a:[ a_id "restart-button"; a_class ["restart-button"] ] [ txt "Restart" ];
+        button ~a:[ a_id "back-to-start-button"; a_class ["back-to-start-button"] ] [ txt "Back to Start" ];
       ];
     ];
     Playground.creets_counter_div;
   ]
+
 
 let%shared () =
   App.register ~service:main_service (fun () () ->

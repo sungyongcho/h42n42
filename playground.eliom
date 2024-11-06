@@ -6,10 +6,13 @@ let creets_counter_div = div ~a:[ a_class [ "creets-counter" ] ] []]
 
 [%%client
 open Params
+open Layout
 open Eliom_content
 open Js_of_ocaml_lwt
+open Js_of_ocaml
 open Creet
 open Quadtree
+open Html
 
 type playground = {
   mutable iter : int;
@@ -60,6 +63,41 @@ let _is_game_over (playground : playground) =
 
 let _increment_global_speed gs = gs := !gs +. 0.0001
 
+let show_game_over () =
+  match getElementById_opt "game-over-container" with
+  | Some container -> container##.style##.display := Js.string "block"
+  | None -> ()
+
+(* Function to hide the Game Over container *)
+let hide_game_over () =
+  match getElementById_opt "game-over-container" with
+  | Some container -> container##.style##.display := Js.string "none"
+  | None -> ()
+
+(* Function to clear all creets from the screen *)
+let clear_creets playground =
+  List.iter (fun creet ->
+    Html.Manip.removeSelf creet.elt
+  ) playground.creets;
+  playground.creets <- [];
+  _update_dom_creets_counter playground
+
+(* Function to restart the game *)
+
+
+(* Function to go back to the start screen *)
+let back_to_start playground =
+  clear_creets playground;
+  playground.global_speed := 1.0;
+  playground.iter <- 0;
+  playground.game_on <- true;
+  hide_game_over ();
+  (* Show the initial button container *)
+  (match getElementById_opt "button-container" with
+   | Some btn -> btn##.style##.display := Js.string "block"
+   | None -> ())
+
+(* Modify the _play function to handle game over *)
 let rec _play playground =
   let%lwt () = Lwt_js.sleep 0.01 in
   let game_on = Creet.check_healthy_creets playground.creets in
@@ -71,7 +109,7 @@ let rec _play playground =
       playground.iter <- 0
     );
     let boundary = {
-      x = (float_of_int gameboard_width)/. 2.;
+      x = (float_of_int gameboard_width) /. 2.;
       y = (float_of_int gameboard_height) /. 2. +. (float_of_int river_height);
       w = (float_of_int gameboard_width) /. 2.;
       h = (float_of_int gameboard_height -. float_of_int river_height -. float_of_int hospital_height) /. 2.;
@@ -86,14 +124,26 @@ let rec _play playground =
     (* Check collisions for sick creets *)
     _check_sick_creet_collisions qt playground.creets;
 
-    (* TODO playground.global_speed <- playground.global_speed +. 0.001; *)
     _play playground
   )
   else (
     playground.game_on <- false;
     Eliom_lib.alert "GAME OVER";
+    show_game_over ();  (* Display the Game Over screen *)
     Lwt.return ()
   )
+let restart_game playground =
+  clear_creets playground;
+  playground.global_speed := 1.0;
+  playground.iter <- 0;
+  playground.game_on <- true;
+  hide_game_over ();
+  (* Restart the game asynchronously *)
+  for _ = 1 to 7 do
+    _add_creet playground
+  done;
+  Lwt.async (fun () -> _play playground)
+
 let play playground =
   for _ = 1 to 7 do
     _add_creet playground
