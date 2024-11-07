@@ -89,6 +89,28 @@ let back_to_start playground =
   playground.iter <- 0;
   playground.game_on <- true;
   hide_game_over ();
+
+  let span_speed_display = To_dom.of_span ~%Control.speed_display in
+  let input_speed_slider = To_dom.of_input ~%Control.speed_slider in
+  span_speed_display##.textContent := Js.some (Js.string (Printf.sprintf "%.3f" 1.000));
+  input_speed_slider##.value := Js.string (Printf.sprintf "%.3f" 1.000);
+
+  let span_contam_range_display = To_dom.of_span ~%Control.contam_range_display in
+  let input_contam_range_slider = To_dom.of_input ~%Control.contam_range_slider in
+  span_contam_range_display##.textContent := Js.some (Js.string (Printf.sprintf "%d%%" 100));
+  input_contam_range_slider##.value := Js.string (Printf.sprintf "%d" 100);
+
+  let span_contam_percent_display = To_dom.of_span ~%Control.contam_percent_display in
+  let input_contam_percent_slider = To_dom.of_input ~%Control.contam_percent_slider in
+  span_contam_percent_display##.textContent := Js.some (Js.string (Printf.sprintf "%d%%" 2));
+  input_contam_percent_slider##.value := Js.string (Printf.sprintf "%d" 2);
+
+  let span_creet_gen_display = To_dom.of_span ~%Control.creet_gen_display in
+  let input_creet_gen_slider = To_dom.of_input ~%Control.creet_gen_slider in
+  span_creet_gen_display##.textContent := Js.some (Js.string (Printf.sprintf "%d seconds" 10));
+  input_creet_gen_slider##.value := Js.string (Printf.sprintf "%d" 10);
+
+
   (* Show the initial button container *)
   (match getElementById_opt "button-container" with
    | Some btn -> btn##.style##.display := Js.string "block"
