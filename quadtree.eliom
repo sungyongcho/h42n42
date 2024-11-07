@@ -154,7 +154,7 @@ let rec query ?(found=[]) qt range =
 
 let _check_sick_creet_collisions qt creets =
   (* Filter sick creets *)
-  let sick_creets = List.filter (fun creet -> creet.status.condition != Healthy) creets in
+  let sick_creets = List.filter (fun creet -> creet.status.condition != Healthy && creet.available) creets in
   let s_contam_range = Eliom_content.Html.To_dom.of_input ~%Control.contam_range_slider in
   let base_contam_range_value = Js.to_string s_contam_range##.value |> int_of_string in
   let contam_range_multiplier = float_of_int base_contam_range_value /. 100.0 in  (* Convert to a percentage multiplier *)

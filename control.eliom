@@ -27,4 +27,13 @@ let contam_percent_slider = input ~a:[
   a_input_max (`Number 100);               (* Use the `Number variant *)
 ] ()
 let contam_percent_display = span ~a:[ a_id "contam-percent-value" ] [ txt (Printf.sprintf "%d%%" 2) ]
+
+let creet_gen_slider = input ~a:[
+  a_input_type `Range;
+  a_id "creet-gen-slider";
+  a_value ("10");             (* a_value remains as a string *)
+  a_input_min (`Number 5);               (* Use the `Number variant *)
+  a_input_max (`Number 15);               (* Use the `Number variant *)
+] ()
+let creet_gen_display = span ~a:[ a_id "creet-gen-value" ] [ txt (Printf.sprintf "%d seconds" 10) ]
 ]

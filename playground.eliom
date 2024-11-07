@@ -30,10 +30,6 @@ let get () =
     global_speed = ref 1.;
     game_on = true
   } in
-  (* let dom_creets_counter_div = Html.To_dom.of_div ~%creets_counter_div in
-  let creets_counter_span =
-    Html.To_dom.of_element playground.creets_counter_span
-  in *)
   Html.Manip.appendChild ~%creets_counter_div playground.creets_counter_span;
   playground
 
@@ -105,7 +101,9 @@ let rec _play playground =
   if game_on then (
     _increment_global_speed playground.global_speed;
     playground.iter <- playground.iter + 1;
-    if playground.iter = 2000 then (
+    let s_creet_gen = Eliom_content.Html.To_dom.of_input ~%Control.creet_gen_slider in
+    let creet_gen_value = Js.to_string s_creet_gen##.value |> int_of_string in
+    if playground.iter = 100 * creet_gen_value then (
       _add_creet playground;
       playground.iter <- 0
     );

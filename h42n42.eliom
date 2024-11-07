@@ -82,6 +82,17 @@ let main () =
     Js._false
   );
 
+  let s_gen_slider = Eliom_content.Html.To_dom.of_input ~%creet_gen_slider in
+
+  s_gen_slider##.oninput := Dom_html.handler (fun _ ->
+    let base_creet_gen_value = Js.to_string s_gen_slider##.value |> int_of_string in
+    let span_creet_gen_display = Eliom_content.Html.To_dom.of_span ~%creet_gen_display in
+    (* Update the span to display the slider's current percentage value *)
+    span_creet_gen_display##.textContent := (Js.some (Js.string (Printf.sprintf "%d seconds" base_creet_gen_value)));
+    (* Log the updated value for debugging purposes *)
+    Js._false
+  );
+
 
   Lwt.return ()
 
@@ -149,6 +160,11 @@ let%shared page () =
         label ~a:[ a_label_for "contam-percent-slider" ] [ txt "Contamination Percent: " ];
         contam_percent_slider;
         contam_percent_display;
+      ];
+      div ~a:[ a_class [ "creet-gen-container" ] ] [
+        label ~a:[ a_label_for "creet-gen-slider" ] [ txt "Creet generation: " ];
+        creet_gen_slider;
+        creet_gen_display;
       ]
     ]
   ]
