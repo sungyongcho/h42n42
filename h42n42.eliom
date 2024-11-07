@@ -18,49 +18,72 @@ let attach_id_action button_id action =
       )
   | None -> ()
 
-  let main () =
-    set_css_variables;
-    Random.self_init ();
-    let playground = Playground.get () in
+let main () =
+  set_css_variables;
+  Random.self_init ();
+  let playground = Playground.get () in
 
-    update_theme_display ();
-    (* Attach event listeners to the theme selector buttons *)
-    attach_id_action "theme-left" (fun () -> handle_theme_change (-1));
-    attach_id_action "theme-right" (fun () -> handle_theme_change 1);
+  update_theme_display ();
+  (* Attach event listeners to the theme selector buttons *)
+  attach_id_action "theme-left" (fun () -> handle_theme_change (-1));
+  attach_id_action "theme-right" (fun () -> handle_theme_change 1);
 
-    (* Attach event listener to the Start button *)
-    attach_id_action "start-button" (fun () ->
-      (* Hide the Start button and theme selector *)
-      (match getElementById_opt "button-container" with
-       | Some btn -> btn##.style##.display := Js.string "none"
-       | None -> ());
-      (* Start the game asynchronously *)
-      Lwt.async (fun () -> Playground.play playground);
-    );
+  (* Attach event listener to the Start button *)
+  attach_id_action "start-button" (fun () ->
+    (* Hide the Start button and theme selector *)
+    (match getElementById_opt "button-container" with
+      | Some btn -> btn##.style##.display := Js.string "none"
+      | None -> ());
+    (* Start the game asynchronously *)
+    Lwt.async (fun () -> Playground.play playground);
+  );
 
-    (* Attach event listeners to Restart and Back to Start buttons *)
-    attach_id_action "restart-button" (fun () ->
-      Playground.restart_game playground
-    );
+  (* Attach event listeners to Restart and Back to Start buttons *)
+  attach_id_action "restart-button" (fun () ->
+    Playground.restart_game playground
+  );
 
-    attach_id_action "back-to-start-button" (fun () ->
-      Playground.back_to_start playground
-    );
+  attach_id_action "back-to-start-button" (fun () ->
+    Playground.back_to_start playground
+  );
 
-    let s_base_speed = Eliom_content.Html.To_dom.of_input ~%speed_slider in
+  let s_base_speed = Eliom_content.Html.To_dom.of_input ~%speed_slider in
 
-    (* Event listener for updating the `base_speed` dynamically *)
-    s_base_speed##.oninput := Dom_html.handler (fun _ ->
-      let base_speed_value = Js.to_string s_base_speed##.value |> float_of_string in
-      let span_speed_value = Eliom_content.Html.To_dom.of_span ~%speed_display in
-      (* Perform actions with updated base_speed_value *)
-      playground.global_speed := base_speed_value;
-      span_speed_value##.textContent := (Js.some (Js.string (Printf.sprintf "%.4f" base_speed_value)));
-      Js_of_ocaml.Firebug.console##log (Js.string (Printf.sprintf "Base speed: %.2f" base_speed_value));
-      Js._false
-    );
+  (* Event listener for updating the `base_speed` dynamically *)
+  s_base_speed##.oninput := Dom_html.handler (fun _ ->
+    let base_speed_value = Js.to_string s_base_speed##.value |> float_of_string in
+    let span_speed_display = Eliom_content.Html.To_dom.of_span ~%speed_display in
+    (* Perform actions with updated base_speed_value *)
+    playground.global_speed := base_speed_value;
+    span_speed_display##.textContent := (Js.some (Js.string (Printf.sprintf "%.4f" base_speed_value)));
+    (* Js_of_ocaml.Firebug.console##log (Js.string (Printf.sprintf "Base speed: %.2f" base_speed_value)); *)
+    Js._false
+  );
 
-    Lwt.return ()
+  let s_contam_range = Eliom_content.Html.To_dom.of_input ~%contam_range_slider in
+
+  s_contam_range##.oninput := Dom_html.handler (fun _ ->
+    let base_contam_value = Js.to_string s_contam_range##.value |> int_of_string in
+    let span_contam_range_display = Eliom_content.Html.To_dom.of_span ~%contam_range_display in
+    (* Update the span to display the slider's current percentage value *)
+    span_contam_range_display##.textContent := (Js.some (Js.string (Printf.sprintf "%d%%" base_contam_value)));
+    (* Log the updated value for debugging purposes *)
+    Js._false
+  );
+
+  let s_contam_percent = Eliom_content.Html.To_dom.of_input ~%contam_percent_slider in
+
+  s_contam_percent##.oninput := Dom_html.handler (fun _ ->
+    let base_contam_percent_value = Js.to_string s_contam_percent##.value |> int_of_string in
+    let span_contam_percent_display = Eliom_content.Html.To_dom.of_span ~%contam_percent_display in
+    (* Update the span to display the slider's current percentage value *)
+    span_contam_percent_display##.textContent := (Js.some (Js.string (Printf.sprintf "%d%%" base_contam_percent_value)));
+    (* Log the updated value for debugging purposes *)
+    Js._false
+  );
+
+
+  Lwt.return ()
 
 ]
 
@@ -111,10 +134,22 @@ let%shared page () =
       ];
     ];
     Playground.creets_counter_div;
-    div ~a:[ a_class [ "speed-slider-container" ] ] [
-      label ~a:[ a_label_for "speed-slider" ] [ txt "Global Speed: " ];
-      speed_slider;
-      speed_display;
+    div ~a:[ a_class [ "control-container" ] ] [
+      div ~a:[ a_class [ "speed-slider-container" ] ] [
+        label ~a:[ a_label_for "speed-slider" ] [ txt "Global Speed: " ];
+        speed_slider;
+        speed_display;
+      ];
+      div ~a:[ a_class [ "contam-range-container" ] ] [
+        label ~a:[ a_label_for "contam-range-slider" ] [ txt "Contamination Range: " ];
+        contam_range_slider;
+        contam_range_display;
+      ];
+      div ~a:[ a_class [ "contam-percent-container" ] ] [
+        label ~a:[ a_label_for "contam-percent-slider" ] [ txt "Contamination Percent: " ];
+        contam_percent_slider;
+        contam_percent_display;
+      ]
     ]
   ]
 

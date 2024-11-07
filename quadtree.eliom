@@ -155,17 +155,22 @@ let rec query ?(found=[]) qt range =
 let _check_sick_creet_collisions qt creets =
   (* Filter sick creets *)
   let sick_creets = List.filter (fun creet -> creet.status.condition != Healthy) creets in
+  let s_contam_range = Eliom_content.Html.To_dom.of_input ~%Control.contam_range_slider in
+  let base_contam_range_value = Js.to_string s_contam_range##.value |> int_of_string in
+  let contam_range_multiplier = float_of_int base_contam_range_value /. 100.0 in  (* Convert to a percentage multiplier *)
   List.iter (fun creet ->
     let query_range = {
       x = creet.coordinates.x;
       y = creet.coordinates.y;
-      r = creet.size /. 4.; (* hitbox is half size of the creet*)
+      r = (creet.size /. 2.0) *. contam_range_multiplier;  (* Apply the percentage multiplier to the hitbox radius *)
     } in
     (* Query for Healthy creets intersecting with the sick creet *)
     let found_creets = query qt query_range in
     (* Iterate over each found Healthy creet *)
     List.iter (fun found_creet ->
-      if Random.int 100 < 2 then (
+      let s_contam_percent = Eliom_content.Html.To_dom.of_input ~%Control.contam_percent_slider in
+      let base_contam_percent_value = Js.to_string s_contam_percent##.value |> int_of_string in
+      if Random.int 100 <= base_contam_percent_value then (
         (* Change the condition of the Healthy creet to simulate infection *)
         _change_condition found_creet;
         (* Log the infection event *)
