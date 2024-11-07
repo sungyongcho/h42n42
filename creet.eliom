@@ -71,7 +71,7 @@ let _move creet =
 
 let _change_size creet =
   let target_size = creet.status.max_size *. creet_base_size in
-  if creet.size <> target_size then (
+  if creet.size < target_size then (
     (* Update the size *)
     creet.size <- creet.size +. 1.;
 

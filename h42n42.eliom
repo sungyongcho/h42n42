@@ -129,6 +129,7 @@ let%shared page () =
       (* Container for start button and theme selector *)
       div ~a:[ a_class [ "button-container" ]; a_id "button-container" ] [
         txt "h42n42";
+
         button ~a:[ a_class [ "start-button" ]; a_id "start-button" ] [ txt "Start" ];
         div ~a:[ a_class [ "theme-selector" ] ] [
           button ~a:[ a_id "theme-left" ] [ txt "<" ];
