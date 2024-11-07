@@ -61,7 +61,12 @@ let _is_game_over (playground : playground) =
   List.length playground.creets = 0
   || not (List.exists any_healthy playground.creets)
 
-let _increment_global_speed gs = gs := !gs +. 0.0001
+let _increment_global_speed gs =
+  if !gs < 5.0 then gs := min 5.0 (!gs +. 0.001);
+  let span_speed_display = To_dom.of_span ~%Control.speed_display in
+  let dom_speed_slider = To_dom.of_input ~%Control.speed_slider in
+  span_speed_display##.textContent := Js.some (Js.string (Printf.sprintf "%.3f" !gs));
+  dom_speed_slider##.value := Js.string (Printf.sprintf "%.3f" !gs)
 
 let show_game_over () =
   match getElementById_opt "game-over-container" with
