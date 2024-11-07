@@ -43,11 +43,12 @@ type creet = {
 }
 
 let get_bg_color condition =
+  let current_theme = Layout.themes.(!Layout.current_theme_index) in
   Js.string (match condition with
-    | Healthy -> "dodgerblue"
-    | Sick -> "darkblue"
-    | Berserk -> "darkcyan"
-    | Mean -> "tomato"
+    | Healthy -> (get_theme_property current_theme).healthy_creet_color
+    | Sick -> (get_theme_property current_theme).sick_creet_color
+    | Berserk -> (get_theme_property current_theme).berserk_creet_color
+    | Mean -> (get_theme_property current_theme).mean_creet_color
   )
 
 let _get_px number = Js.string (Printf.sprintf "%dpx" number)
@@ -108,12 +109,11 @@ let _surprise_move creet =
   )
 
 let _change_condition creet =
-  (* let n = Random.int 100 in *)
-  (* let new_condition =
+  let n = Random.int 100 in
+  let new_condition =
     if n < 10 then  Berserk
     else if n >= 10 && n < 20 then Mean
-    else Sick *)
-  let new_condition = Berserk
+    else Sick
   in
 
   creet.status.condition <- new_condition;

@@ -113,7 +113,7 @@ let back_to_start playground =
 
   (* Show the initial button container *)
   (match getElementById_opt "button-container" with
-   | Some btn -> btn##.style##.display := Js.string "block"
+   | Some btn -> btn##.style##.display := Js.string "flex"
    | None -> ())
 
 (* Modify the _play function to handle game over *)

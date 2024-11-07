@@ -120,9 +120,11 @@ let%client main_service = ~%main_service
 let%shared page () =
   body [
     div ~a:[ a_class [ "gameboard" ] ] [
-      div ~a:[ a_class [ "river" ] ] [];
+      div ~a:[ a_class [ "river" ];
+      a_style "display: flex; justify-content: center; align-items: center; text-align: center;"] [ txt "river" ];
       Playground.elt;
-      div ~a:[ a_class [ "hospital" ] ] [ txt "hospital" ];
+      div ~a:[ a_class [ "hospital" ];
+      a_style "display: flex; justify-content: center; align-items: center; text-align: center;"] [ txt "hospital" ];
 
       (* Container for start button and theme selector *)
       div ~a:[ a_class [ "button-container" ]; a_id "button-container" ] [
