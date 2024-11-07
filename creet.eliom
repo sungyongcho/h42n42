@@ -224,25 +224,52 @@ let create global_speed =
   creet
 
 
-let move creet =
-  creet.counter <- creet.counter + 1;
-  (* _change_direction creet; *)
-  (* Firebug.console##log (Js.string (Printf.sprintf "y: %d, y_min: %d" creet.coordinates.y creet.coordinates.y_min)); *)
-  if creet.coordinates.x <= creet.coordinates.x_min
-    || creet.coordinates.x >=  creet.coordinates.x_max -. (creet.size /. 2.) then (
-    creet.coordinates.x_step <- Float.neg creet.coordinates.x_step;
-  )
-  else if creet.coordinates.y <= creet.coordinates.y_min
-    ||
-    creet.coordinates.y >= creet.coordinates.y_max -. (creet.size /. 2.) then (
-    if creet.coordinates.y -. (creet.size /. 2.) <= 0. && creet.status.condition = Healthy then _change_condition creet;
-    creet.coordinates.y_step <- Float.neg creet.coordinates.y_step;
-  )
-  else _surprise_move creet;
+  let move creet =
+    creet.counter <- creet.counter + 1;
 
-  (match creet.status.condition with
-  | Berserk | Mean -> _change_size creet
-  | _ -> () );
+    let boundary_hit = ref false in
 
-  _move creet;
+    (* Check and handle X boundaries *)
+    if creet.coordinates.x <= creet.coordinates.x_min then (
+      creet.coordinates.x <- creet.coordinates.x_min;  (* Clamp to minimum X *)
+      creet.coordinates.x_step <- Float.neg creet.coordinates.x_step;  (* Reverse X direction *)
+      boundary_hit := true
+    )
+    else if creet.coordinates.x >= creet.coordinates.x_max -. (creet.size /. 2.) then (
+      creet.coordinates.x <- creet.coordinates.x_max -. (creet.size /. 2.);  (* Clamp to maximum X *)
+      creet.coordinates.x_step <- Float.neg creet.coordinates.x_step;  (* Reverse X direction *)
+      boundary_hit := true
+    );
+
+    (* Check and handle Y boundaries *)
+    if creet.coordinates.y <= creet.coordinates.y_min then (
+      creet.coordinates.y <- creet.coordinates.y_min;  (* Clamp to minimum Y *)
+
+      (* Trigger condition change when hitting the top boundary and if Healthy *)
+      if creet.status.condition = Healthy then (
+        _change_condition creet;
+        Firebug.console##log (Js.string "Creet has been contaminated at the top boundary.");
+      );
+
+      creet.coordinates.y_step <- Float.neg creet.coordinates.y_step;  (* Reverse Y direction *)
+      boundary_hit := true
+    )
+    else if creet.coordinates.y >= creet.coordinates.y_max -. (creet.size /. 2.) then (
+      creet.coordinates.y <- creet.coordinates.y_max -. (creet.size /. 2.);  (* Clamp to maximum Y *)
+      creet.coordinates.y_step <- Float.neg creet.coordinates.y_step;  (* Reverse Y direction *)
+      boundary_hit := true
+    );
+
+    (* If no boundary was hit, perform surprise movement *)
+    if not !boundary_hit then (
+      _surprise_move creet
+    );
+
+    (* Adjust size based on condition *)
+    (match creet.status.condition with
+    | Berserk | Mean -> _change_size creet
+    | _ -> () );
+
+    (* Move the creet based on updated steps and speed *)
+    _move creet;
 ]
